@@ -17,3 +17,13 @@ export function atTier<T>(entries: readonly T[], tier: number): T {
   if (entry === undefined) throw new RangeError(`no table entry for tier ${tier}`);
   return entry;
 }
+
+/** Greatest common divisor of two non-negative integers (Euclid). */
+export function gcd(a: number, b: number): number {
+  return b === 0 ? a : gcd(b, a % b);
+}
+
+/** Least common multiple of two positive integers. */
+export function lcm(a: number, b: number): number {
+  return (a / gcd(a, b)) * b;
+}

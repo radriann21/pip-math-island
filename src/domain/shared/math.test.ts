@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { atGrade, atTier, roundTo } from './math';
+import { atGrade, atTier, gcd, lcm, roundTo } from './math';
 
 describe('table helpers', () => {
   it('atGrade reads one-based grade rows', () => {
@@ -15,5 +15,18 @@ describe('table helpers', () => {
   });
   it('roundTo stays exported', () => {
     expect(roundTo(1.234, 1)).toBe(1.2);
+  });
+});
+
+describe('gcd and lcm', () => {
+  it('gcd finds the greatest common divisor', () => {
+    expect(gcd(12, 18)).toBe(6);
+    expect(gcd(7, 5)).toBe(1);
+    expect(gcd(9, 0)).toBe(9);
+  });
+  it('lcm finds the least common multiple', () => {
+    expect(lcm(4, 6)).toBe(12);
+    expect(lcm(3, 5)).toBe(15);
+    expect(lcm(2, 4)).toBe(4);
   });
 });
