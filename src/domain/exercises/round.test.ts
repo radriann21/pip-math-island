@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createSeededRng, randInt } from '../shared/rng';
-import type { GenContext, TopicDefinition } from '../shared/types';
+import type { GenContext, TopicDefinition, TopicId } from '../shared/types';
 import { generateRound } from './round';
 import { TOPICS } from './registry';
 
@@ -98,7 +98,7 @@ describe('generateRound', () => {
   });
 
   it('throws for an unknown topic', () => {
-    expect(() => generateRound('word', 1, 0, 'en', createSeededRng(1))).toThrow(/word/);
+    expect(() => generateRound('nope' as TopicId, 1, 0, 'en', createSeededRng(1))).toThrow(/nope/);
   });
 
   it('draws only from the injected rng', () => {
