@@ -1,6 +1,5 @@
 import { NotFoundError, ValidationError } from '@/application/errors';
 import type {
-  AnswerDetail,
   Child,
   DailyActivity,
   PlayerState,
@@ -11,7 +10,7 @@ import type {
 } from '@/application/model';
 import type { ChildRepository, Clock, ProgressRepository } from '@/application/ports';
 import { applyRace, applyRound, emptyPlayer } from '@/application/projection';
-import { asRecord, clampInt, isTopicId, toGrade, toStars, toTier } from '../coerce';
+import { asRecord, clampInt, isTopicId, parseAnswerDetails, toGrade, toStars, toTier } from '../coerce';
 import { type IdFactory, defaultIdFactory, readJson, writeJson } from './json';
 import type { KeyValueStorage } from './KeyValueStorage';
 import { progressKeyFor } from './keys';
@@ -29,17 +28,6 @@ interface StoredPlayer extends Omit<PlayerState, 'child'> {
 
 const count = (v: unknown): number => clampInt(v, 0, Number.MAX_SAFE_INTEGER, 0);
 
-function parseDetails(value: unknown): AnswerDetail[] {
-  if (!Array.isArray(value)) return [];
-  const out: AnswerDetail[] = [];
-  for (const item of value) {
-    const r = asRecord(item);
-    if (!r || typeof r.prompt !== 'string' || typeof r.correct !== 'boolean') continue;
-    out.push({ index: count(r.index), prompt: r.prompt, correct: r.correct, tries: r.tries === 2 ? 2 : 1 });
-  }
-  return out;
-}
-
 function parseHistory(value: unknown): RoundHistoryItem[] {
   if (!Array.isArray(value)) return [];
   const out: RoundHistoryItem[] = [];
@@ -56,7 +44,7 @@ function parseHistory(value: unknown): RoundHistoryItem[] {
       missed: clampInt(r.missed, 0, 10, 0),
       xpGained: clampInt(r.xpGained, 0, 200, 0),
       playedAt: r.playedAt,
-      details: parseDetails(r.details),
+      details: parseAnswerDetails(r.details),
     });
   }
   return out.slice(-MAX_HISTORY);

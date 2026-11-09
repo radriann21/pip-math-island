@@ -1,4 +1,5 @@
 import { TOPICS } from '@/domain/exercises';
+import type { AnswerDetail } from '@/application/model';
 import type { Grade, Locale, Stars, Tier, TopicId } from '@/domain/shared/types';
 
 /** Defensive coercion helpers shared by adapters. Stored or remote data is never trusted blindly. */
@@ -23,4 +24,16 @@ const TOPIC_IDS: ReadonlySet<string> = new Set(TOPICS.map((t) => t.id));
 
 export function isTopicId(value: unknown): value is TopicId {
   return typeof value === 'string' && TOPIC_IDS.has(value);
+}
+
+/** Keeps only well-formed answer details from untrusted JSON (a stored blob or a `jsonb` column). */
+export function parseAnswerDetails(value: unknown): AnswerDetail[] {
+  if (!Array.isArray(value)) return [];
+  const out: AnswerDetail[] = [];
+  for (const item of value) {
+    const r = asRecord(item);
+    if (!r || typeof r.prompt !== 'string' || typeof r.correct !== 'boolean') continue;
+    out.push({ index: clampInt(r.index, 0, Number.MAX_SAFE_INTEGER, 0), prompt: r.prompt, correct: r.correct, tries: r.tries === 2 ? 2 : 1 });
+  }
+  return out;
 }
