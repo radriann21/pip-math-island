@@ -1,0 +1,786 @@
+<title>Pip's Math Island</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800&display=swap">
+<style>
+/* Layout concept: graph-paper notebook. A friendly fox (Pip) guides the child across a grid of topic "islands";
+   chunky tactile buttons, big type, one signature manipulative per topic. */
+:root{
+  --bg:#f2f6ff; --grid:#e1e9fa; --card:#ffffff; --ink:#1a2140; --muted:#58628a; --line:#d5def3;
+  --accent:#ff7a1a; --accent-ink:#1d1208; --violet:#5b3df5; --gold:#ffbd2e;
+  --good:#12935f; --good-bg:#dcf6ea; --bad:#d6333a; --bad-bg:#ffe4e5; --warn-bg:#fff2d1; --warn:#8a5a00;
+  --font-d:'Fredoka',ui-rounded,'Trebuchet MS',system-ui,sans-serif;
+  --font-b:'Nunito',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#10172b; --grid:#172039; --card:#1a2342; --ink:#eef2ff; --muted:#a6b0d4; --line:#2c3862;
+  --accent:#ff9440; --violet:#a28dff; --gold:#ffcf5c;
+  --good:#3ed598; --good-bg:#12382c; --bad:#ff7a80; --bad-bg:#43191d; --warn-bg:#40320f; --warn:#ffd36b; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10172b; --grid:#172039; --card:#1a2342; --ink:#eef2ff; --muted:#a6b0d4; --line:#2c3862;
+  --accent:#ff9440; --violet:#a28dff; --gold:#ffcf5c;
+  --good:#3ed598; --good-bg:#12382c; --bad:#ff7a80; --bad-bg:#43191d; --warn-bg:#40320f; --warn:#ffd36b; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{background-color:var(--bg);color:var(--ink);font:600 17px/1.5 var(--font-b);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:28px 28px}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:4px solid var(--violet);outline-offset:3px;border-radius:12px}
+h1,h2,h3{font-family:var(--font-d);margin:0;line-height:1.15;text-wrap:balance}
+#app{max-width:980px;margin-inline:auto;padding-block:14px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* buttons */
+.btn{font:600 1.15rem var(--font-d);padding:.7rem 1.4rem;border-radius:16px;border:0;background:var(--accent);color:var(--accent-ink);
+  box-shadow:0 5px 0 color-mix(in oklab,var(--accent) 55%,#000);transition:transform .08s,box-shadow .08s}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 color-mix(in oklab,var(--accent) 55%,#000)}
+.btn.alt{background:var(--card);color:var(--ink);border:2px solid var(--line);box-shadow:0 5px 0 var(--line)}
+.btn.alt:active{box-shadow:0 1px 0 var(--line)}
+.btn.sm{padding:.4rem .9rem;font-size:1rem;border-radius:12px;box-shadow:0 3px 0 var(--line)}
+.btn.big{width:100%;font-size:1.35rem;padding:.9rem}
+.btn:disabled{opacity:.5;cursor:default}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--card);border:2px solid var(--line);border-radius:999px;padding:4px 14px;font:600 1rem var(--font-d)}
+.chip svg{width:20px;height:20px}
+button.chip[aria-pressed="true"]{background:var(--violet);border-color:var(--violet);color:#fff}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) button.chip[aria-pressed="true"]{color:#12112b}}
+:root[data-theme="dark"] button.chip[aria-pressed="true"]{color:#12112b}
+
+/* top bar */
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.logo{display:flex;align-items:center;gap:10px;font:700 1.45rem var(--font-d)}
+.logo svg{width:44px;height:44px}
+.hero{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;margin-bottom:18px}
+.hero .pipbox{width:110px}
+.bubble{position:relative;background:var(--card);border:3px solid var(--line);border-radius:22px;padding:12px 16px;font-weight:700}
+.bubble::before{content:"";position:absolute;left:-12px;top:34px;width:18px;height:18px;background:var(--card);border-left:3px solid var(--line);border-bottom:3px solid var(--line);transform:rotate(45deg)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:22px}
+.stat{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:10px 14px}
+.stat small{display:block;color:var(--muted);font-weight:700;letter-spacing:.04em;text-transform:uppercase;font-size:.72rem}
+.stat b{font:700 1.4rem var(--font-d)}
+.meter{height:12px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:6px}
+.meter i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--gold));border-radius:99px;transition:width .6s}
+h2.sec{font-size:1.35rem;margin:6px 0 12px}
+
+/* island cards */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:14px}
+.island{text-align:left;background:var(--card);border:2px solid var(--line);border-radius:22px;padding:14px;display:flex;flex-direction:column;gap:8px;
+  box-shadow:0 5px 0 var(--line);transition:transform .1s,box-shadow .1s;min-width:0}
+.island:hover{transform:translateY(-2px)}
+.island:active{transform:translateY(4px);box-shadow:0 1px 0 var(--line)}
+.tile{width:56px;height:56px;border-radius:18px;display:grid;place-items:center;color:var(--c);
+  background:color-mix(in oklab,var(--c) 20%,var(--card));border:2px solid color-mix(in oklab,var(--c) 50%,var(--card))}
+.tile svg{width:34px;height:34px}
+.island h3{font-size:1.08rem}
+.stars{display:flex;gap:2px;color:var(--gold)}
+.stars svg{width:20px;height:20px}
+.stars .off{color:var(--line)}
+.tier{font-size:.8rem;color:var(--muted);font-weight:800}
+.wide{grid-column:1/-1;flex-direction:row;align-items:center;gap:16px;background:linear-gradient(100deg,color-mix(in oklab,var(--violet) 18%,var(--card)),var(--card))}
+.wide h3{font-size:1.3rem}
+.foot{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}
+
+/* quiz */
+.quiz{max-width:680px;margin-inline:auto}
+.qtop{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.dots{display:flex;gap:6px;flex:1;justify-content:center;flex-wrap:wrap}
+.dot{width:14px;height:14px;border-radius:50%;background:var(--line);border:2px solid var(--line)}
+.dot.cur{background:var(--card);border-color:var(--violet);transform:scale(1.25)}
+.dot.g{background:var(--good);border-color:var(--good)} .dot.y{background:var(--gold);border-color:var(--gold)} .dot.b{background:var(--bad);border-color:var(--bad)}
+.stage{display:grid;grid-template-columns:84px 1fr;gap:12px;align-items:center;margin-bottom:10px}
+.stage .bubble{padding:8px 14px;font-size:.98rem}
+.stage .bubble::before{top:26px}
+.qcard{background:var(--card);border:3px solid var(--line);border-radius:26px;padding:20px 18px;box-shadow:0 6px 0 var(--line)}
+.prompt{font-size:clamp(1.35rem,4.6vw,1.9rem);text-align:center;margin-bottom:12px;overflow-wrap:anywhere}
+.vis{display:flex;justify-content:center;align-items:center;gap:14px;flex-wrap:wrap;margin:6px 0 16px;min-height:20px}
+.vis svg{max-width:100%;height:auto}
+.eq{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center}
+.op{font:700 2rem var(--font-d)}
+.dot-v{fill:var(--violet)}
+.xx{stroke:var(--bad);stroke-width:3;stroke-linecap:round}
+.opts{display:grid;gap:12px;grid-template-columns:1fr 1fr}
+.opts.n2{grid-template-columns:1fr 1fr}
+.opt{position:relative;font:600 clamp(1.3rem,5vw,1.8rem) var(--font-d);padding:16px 10px;border-radius:20px;background:var(--card);border:3px solid var(--line);box-shadow:0 5px 0 var(--line);min-height:68px;
+  display:flex;align-items:center;justify-content:center;transition:transform .08s}
+.opt kbd{position:absolute;left:10px;top:8px;font:700 .72rem var(--font-b);color:var(--muted)}
+.opt:hover:not(:disabled){border-color:var(--violet)}
+.opt:active:not(:disabled){transform:translateY(4px);box-shadow:0 1px 0 var(--line)}
+.opt.no{background:var(--bad-bg);border-color:var(--bad);opacity:.75}
+.opt.ok{background:var(--good-bg);border-color:var(--good)}
+.disp{font:700 2.4rem var(--font-d);text-align:center;border:3px dashed var(--line);border-radius:18px;padding:6px;min-height:68px;display:grid;place-items:center;margin-bottom:12px;letter-spacing:.04em;font-variant-numeric:tabular-nums}
+.disp .ph{color:var(--line)}
+.disp.no{border-color:var(--bad);background:var(--bad-bg)} .disp.ok{border-color:var(--good);background:var(--good-bg)}
+.keys{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;max-width:340px;margin-inline:auto}
+.key{font:600 1.5rem var(--font-d);padding:10px 0;border-radius:16px;background:var(--card);border:2px solid var(--line);box-shadow:0 4px 0 var(--line)}
+.key:active{transform:translateY(3px);box-shadow:0 1px 0 var(--line)}
+.key:disabled{opacity:.25}
+.tools{display:flex;justify-content:center;margin-top:12px}
+#fb{margin-top:14px;min-height:8px}
+.fb{border-radius:20px;padding:14px 16px;display:grid;gap:10px;border:3px solid}
+.fb.good{background:var(--good-bg);border-color:var(--good)}
+.fb.bad{background:var(--bad-bg);border-color:var(--bad)}
+.fb.tip{background:var(--warn-bg);border-color:var(--gold)}
+.fb strong{font:700 1.2rem var(--font-d)}
+.fb p{margin:0}
+
+/* math bits */
+.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.05;margin:0 .15em;font-family:var(--font-d)}
+.fr i{font-style:normal;padding:0 .2em}
+.fr i:first-child{border-bottom:.09em solid currentColor}
+.box{display:inline-grid;place-items:center;min-width:1.5em;height:1.5em;border:3px dashed var(--accent);border-radius:10px;color:var(--accent);padding:0 .2em}
+.seq{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.seq b{display:inline-grid;place-items:center;min-width:58px;height:58px;padding:0 10px;border-radius:16px;background:color-mix(in oklab,var(--violet) 14%,var(--card));border:3px solid var(--line);font:600 1.5rem var(--font-d)}
+.seq b.q{border:3px dashed var(--accent);color:var(--accent);background:var(--card)}
+.tag{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background:color-mix(in oklab,var(--gold) 28%,var(--card));border:2px solid var(--gold);border-radius:12px 18px 18px 12px;font:600 1.3rem var(--font-d)}
+.shape{fill:color-mix(in oklab,var(--violet) 28%,var(--card));stroke:var(--violet);stroke-width:4;stroke-linejoin:round}
+.lbl{font:700 15px var(--font-b);fill:var(--ink)}
+.clk-f{fill:var(--card);stroke:var(--ink);stroke-width:4}
+.clk-n{font:600 13px var(--font-d);fill:var(--ink);text-anchor:middle;dominant-baseline:central}
+.hand{stroke:var(--ink);stroke-linecap:round}
+.hand.m{stroke:var(--accent)}
+.coin{stroke-width:3}
+.coin-t{font:700 16px var(--font-d);text-anchor:middle;dominant-baseline:central;fill:#3b2a00}
+.bill{fill:#bfe8c9;stroke:#2e8b57;stroke-width:3}
+.bill-t{font:700 18px var(--font-d);text-anchor:middle;dominant-baseline:central;fill:#124d2c}
+.plate{fill:none;stroke:var(--muted);stroke-width:3;stroke-dasharray:6 5}
+
+/* result, stickers, parents */
+.center{text-align:center}
+.bigstars{display:flex;justify-content:center;gap:6px;color:var(--gold);margin:6px 0 12px}
+.bigstars svg{width:64px;height:64px}
+.bigstars .off{color:var(--line)}
+.pop{animation:pop .6s cubic-bezier(.3,1.6,.5,1) both}
+.card{background:var(--card);border:2px solid var(--line);border-radius:22px;padding:16px 18px}
+.list{display:grid;gap:10px;margin:12px 0;text-align:left}
+.list .it{background:var(--card);border:2px solid var(--line);border-radius:16px;padding:10px 14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.list .it .eqs{font:600 1.15rem var(--font-d)}
+.stk{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px}
+.stk .s{background:var(--card);border:2px solid var(--line);border-radius:20px;padding:12px;text-align:center;display:grid;gap:4px;justify-items:center}
+.stk .s svg{width:72px;height:72px}
+.stk .s small{color:var(--muted);font-weight:700;line-height:1.3}
+.stk .s.lock{opacity:.6}
+table{width:100%;border-collapse:collapse}
+th,td{padding:8px 10px;text-align:left;border-bottom:2px solid var(--line)}
+th{font:600 .95rem var(--font-d);color:var(--muted)}
+.tw{overflow-x:auto}
+.timer{height:16px;border-radius:99px;background:var(--line);overflow:hidden;flex:1}
+.timer i{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--good),var(--gold),var(--accent));transform-origin:left}
+.rq{font:700 clamp(2.4rem,11vw,4rem) var(--font-d);text-align:center;margin:8px 0 18px;font-variant-numeric:tabular-nums}
+.wel{max-width:560px;margin:20px auto;text-align:center;display:grid;gap:16px;justify-items:center}
+.wel input{font:600 1.4rem var(--font-d);padding:12px 16px;border-radius:16px;border:3px solid var(--line);background:var(--card);color:var(--ink);width:100%;max-width:340px;text-align:center}
+.wel label{font:700 1rem var(--font-d);color:var(--muted)}
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:30;display:grid;gap:8px;justify-items:center;width:max-content;max-width:92vw}
+#toast div{background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:16px;font:600 1.05rem var(--font-d);animation:pop .4s both}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:20;width:100%;height:100%}
+.bounce{animation:bounce .7s ease 2}
+@keyframes pop{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes bounce{0%,100%{transform:translateY(0)}40%{transform:translateY(-14px)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+.shake{animation:shake .3s}
+@media (max-width:520px){.hero{grid-template-columns:78px 1fr}.hero .pipbox{width:78px}.wide{flex-direction:column;align-items:flex-start}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+  <symbol id="i-star" viewBox="0 0 24 24"><polygon points="12,1.8 15,8.6 22.4,9.3 16.8,14.2 18.5,21.6 12,17.7 5.5,21.6 7.2,14.2 1.6,9.3 9,8.6" fill="currentColor"/></symbol>
+  <symbol id="i-starc" viewBox="0 0 24 24"><polygon points="12,1.8 15,8.6 22.4,9.3 16.8,14.2 18.5,21.6 12,17.7 5.5,21.6 7.2,14.2 1.6,9.3 9,8.6" fill="#ffbd2e" stroke="#d9890b" stroke-width="1.4" stroke-linejoin="round"/></symbol>
+  <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 2c1 4.5 6.5 6.5 6.5 12.5a6.5 6.5 0 0 1-13 0c0-3 1.7-4.6 3-7 .9 1 1.6 2 1.8 3.2C11.6 8.3 12 5.5 12 2z" fill="currentColor"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24"><polygon points="13.5,1.5 4,13.5 11,13.5 9.5,22.5 20,9.5 13,9.5" fill="currentColor"/></symbol>
+  <symbol id="i-crown" viewBox="0 0 24 24"><path d="M2.5 7.5l5.2 4.7L12 4l4.3 8.2 5.2-4.7-2 12.5H4.5z" fill="currentColor"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 21.5s-8.5-5.6-8.5-11.4A4.6 4.6 0 0 1 12 7.6a4.6 4.6 0 0 1 8.5 2.5c0 5.800-8.500 11.400-8.500 11.400z" fill="currentColor"/></symbol>
+  <symbol id="i-medal" viewBox="0 0 24 24"><path d="M6 1.5l3.500 7h5l3.500-7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><circle cx="12" cy="15" r="6.500" fill="currentColor"/></symbol>
+  <symbol id="i-apple" viewBox="0 0 24 24"><path d="M12 7.500c-3-2.200-8-.2-8 5.800 0 5 3 9 5 9 1.200 0 1.800-.6 3-.6s1.800.6 3 .6c2 0 5-4 5-9 0-6-5-8-8-5.800z" fill="#e5484d"/><path d="M12 7.500c0-2.800 1-4.300 3-5" stroke="#6b4423" stroke-width="1.700" fill="none" stroke-linecap="round"/><path d="M14 4.500c2-1.200 4.200-.2 4.200 1.500-2.200.9-4.200 0-4.200-1.500z" fill="#3fae5a"/></symbol>
+  <symbol id="i-balloon" viewBox="0 0 24 24"><ellipse cx="12" cy="9" rx="6.500" ry="7.500" fill="#4c8dff"/><path d="M12 16.500l-1.600 2.500h3.200z" fill="#4c8dff"/><path d="M12 19c-1.200 2 1.200 3 0 4.500" stroke="#8a93b5" fill="none" stroke-width="1.200"/><ellipse cx="9.500" cy="6.500" rx="1.500" ry="2.300" fill="#fff" opacity=".45"/></symbol>
+  <symbol id="i-cookie" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.800" fill="#d9a066" stroke="#a8702f" stroke-width="1.500"/><circle cx="8.500" cy="9" r="1.700" fill="#6b3f1d"/><circle cx="15" cy="8.500" r="1.500" fill="#6b3f1d"/><circle cx="14" cy="15" r="1.800" fill="#6b3f1d"/><circle cx="8.500" cy="15" r="1.400" fill="#6b3f1d"/></symbol>
+  <pattern id="pgH" width="6.6" height="6.6" patternUnits="userSpaceOnUse"><rect width="6.6" height="6.6" fill="#5b8cff"/><path d="M0 0H6.6V6.6" fill="none" stroke="#fff" stroke-opacity=".6" stroke-width=".8"/></pattern>
+  <pattern id="pgT" width="6.6" height="6.6" patternUnits="userSpaceOnUse"><rect width="6.6" height="6.6" fill="#2fb49f"/><path d="M0 0H6.6V6.6" fill="none" stroke="#fff" stroke-opacity=".6" stroke-width=".8"/></pattern>
+  <pattern id="pgO" width="6.6" height="6.6" patternUnits="userSpaceOnUse"><rect width="6.6" height="6.6" fill="#ffb02e"/><path d="M0 0H6.6V6.6" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width=".8"/></pattern>
+</defs></svg>
+
+<main id="app"></main>
+<div id="toast" role="status" aria-live="polite"></div>
+<canvas id="confetti" aria-hidden="true"></canvas>
+
+<script>
+(function(){
+'use strict';
+/* ============================================================ state ============ */
+const KEY='pip-math-island-v1';
+const defaults=()=>({name:'',grade:1,lang:((typeof navigator!=='undefined'&&navigator.language)||'en').toLowerCase().indexOf('es')===0?'es':'en',
+  sound:true,xp:0,streak:0,last:'',rounds:0,day:{d:'',rounds:0,bonus:false},badges:{},race:0,p:{},started:false});
+const S=defaults();
+function load(){try{const j=JSON.parse(localStorage.getItem(KEY)||'null');if(j&&j.v===1)Object.assign(S,j.s);}catch(e){}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({v:1,s:S}));}catch(e){}}
+const L=(en,es)=>S.lang==='es'?es:en;
+const loc=()=>S.lang==='es'?'es-ES':'en-US';
+const prog=(id,g)=>{g=g||S.grade;S.p[g]=S.p[g]||{};return S.p[g][id]=S.p[g][id]||{t:0,s:0,n:0,ok:0};};
+
+/* ============================================================ helpers ============ */
+const r=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const pick=a=>a[r(0,a.length-1)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=r(0,i);const t=a[i];a[i]=a[j];a[j]=t;}return a;};
+const rnd=(x,d)=>{const k=Math.pow(10,d);return Math.round(x*k)/k;};
+const fmt=n=>Number(n).toLocaleString(loc(),{maximumFractionDigits:2});
+const fmtF=(n,d)=>Number(n).toLocaleString(loc(),{minimumFractionDigits:d,maximumFractionDigits:d});
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const F=(n,d)=>`<span class="fr"><i>${n}</i><i>${d}</i></span>`;
+const BOX='<span class="box">?</span>';
+const gcd=(a,b)=>b?gcd(b,a%b):a;
+
+function numOpts(ans,dec){
+  const s=new Set([ans]);
+  const steps=dec?[.1,-.1,.01,-.01,1,-1,10,-10,.5,-.5]:[1,-1,2,-2,10,-10,5,-5,100,-100,3,-3];
+  for(const st of shuffle(steps)){if(s.size>=4)break;const c=rnd(ans+st,dec?2:0);if(c>=0&&!s.has(c))s.add(c);}
+  let k=3;while(s.size<4){s.add(rnd(ans+k*(dec?.1:1),dec?2:0));k++;}
+  return shuffle(Array.from(s));
+}
+const mk=o=>Object.assign({kind:'num',vis:'',hint:'',why:'',dec:false,neg:false},o);
+function choiceQ(prompt,vis,ans,wrong,hint,why){
+  const set=[ans];for(const w of wrong){if(set.indexOf(w)<0)set.push(w);}
+  return mk({kind:'choice',prompt,vis,answer:ans,opts:shuffle(set.slice(0,4)),hint,why});
+}
+function numChoice(prompt,vis,ans,dec,hint,why){return mk({kind:'choice',prompt,vis,answer:fmt(ans),opts:numOpts(ans,dec).map(fmt),hint,why});}
+function numQ(prompt,vis,ans,dec,hint,why){return mk({kind:'num',prompt,vis,answer:ans,dec:!!dec,hint,why});}
+function arith(g,d,prompt,vis,ans,dec,hint,why){return (g<=2||(g===3&&d===0))?numChoice(prompt,vis,ans,dec,hint,why):numQ(prompt,vis,ans,dec,hint,why);}
+function check(q,v){
+  if(q.kind==='choice')return v===q.answer;
+  const x=parseFloat(String(v).replace(',','.'));
+  return isFinite(x)&&Math.abs(x-q.answer)<1e-6;
+}
+function levelInfo(xp){
+  const need=l=>60*(l-1)*(l-1);
+  const level=1+Math.floor(Math.sqrt(xp/60));
+  const a=need(level),b=need(level+1);
+  return {level,pct:Math.max(0,Math.min(100,100*(xp-a)/(b-a))),next:b-xp};
+}
+
+/* ============================================================ drawings ============ */
+function items(n,sym,o){o=o||{};const per=o.per||5,sz=o.sz||30,rows=Math.ceil(n/per),w=Math.min(n,per)*sz,h=rows*sz;let s='';
+  for(let i=0;i<n;i++){const x=(i%per)*sz,y=Math.floor(i/per)*sz;
+    s+=`<use href="#i-${sym}" x="${x}" y="${y}" width="${sz-2}" height="${sz-2}"/>`;
+    if(o.cross&&i>=n-o.cross)s+=`<path class="xx" d="M${x+4} ${y+4}L${x+sz-6} ${y+sz-6}M${x+sz-6} ${y+4}L${x+4} ${y+sz-6}"/>`;}
+  return `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" role="img" aria-label="${n}">${s}</svg>`;}
+function dotsArr(rows,cols){let s='';for(let i=0;i<rows;i++)for(let j=0;j<cols;j++)s+=`<circle class="dot-v" cx="${14+j*26}" cy="${14+i*26}" r="10"/>`;
+  return `<svg viewBox="0 0 ${cols*26} ${rows*26}" width="${cols*26}" height="${rows*26}" role="img" aria-label="${rows} x ${cols}">${s}</svg>`;}
+function plates(k){let s='';for(let i=0;i<k;i++)s+=`<circle class="plate" cx="${30+i*66}" cy="30" r="26"/>`;
+  return `<svg viewBox="0 0 ${k*66} 60" width="${k*66}" height="60" role="img" aria-label="${k}">${s}</svg>`;}
+function pie(n,d){const c=60;let s='';
+  if(d===1)s=`<circle cx="60" cy="60" r="54" style="fill:${n?'var(--violet)':'var(--card)'}" stroke="var(--ink)" stroke-width="3"/>`;
+  else for(let k=0;k<d;k++){const a0=-Math.PI/2+k*2*Math.PI/d,a1=-Math.PI/2+(k+1)*2*Math.PI/d;
+    const x0=c+54*Math.cos(a0),y0=c+54*Math.sin(a0),x1=c+54*Math.cos(a1),y1=c+54*Math.sin(a1);
+    s+=`<path d="M60 60L${x0.toFixed(2)} ${y0.toFixed(2)}A54 54 0 0 1 ${x1.toFixed(2)} ${y1.toFixed(2)}Z" style="fill:${k<n?'var(--violet)':'var(--card)'}" stroke="var(--ink)" stroke-width="3" stroke-linejoin="round"/>`;}
+  return `<svg viewBox="0 0 120 120" width="120" height="120" role="img" aria-label="${n}/${d}">${s}</svg>`;}
+function bar(n,d,lab){let s='';const w=220/d;for(let k=0;k<d;k++)s+=`<rect x="${k*w}" y="2" width="${w}" height="34" style="fill:${k<n?'var(--violet)':'var(--card)'}" stroke="var(--ink)" stroke-width="3"/>`;
+  return `<svg viewBox="-4 0 232 40" width="232" height="40" role="img" aria-label="${n}/${d}">${s}</svg>`;}
+function blocks(N){const h=Math.floor(N/100),t=Math.floor(N/10)%10,o=N%10;let s='',x=2;
+  for(let i=0;i<h;i++){s+=`<rect x="${x}" y="2" width="66" height="66" fill="url(#pgH)" stroke="#2c4fb3" stroke-width="1.500"/>`;x+=72;}
+  for(let i=0;i<t;i++){s+=`<rect x="${x}" y="2" width="6.6" height="66" fill="url(#pgT)" stroke="#1d7f70" stroke-width="1.200"/>`;x+=10;}
+  if(t)x+=10;
+  for(let i=0;i<o;i++){s+=`<rect x="${x+(i%3)*8}" y="${2+Math.floor(i/3)*8}" width="6.6" height="6.6" fill="url(#pgO)" stroke="#b97500" stroke-width="1"/>`;}
+  const w=x+(o?26:2);
+  return `<svg viewBox="0 0 ${w} 70" width="${Math.min(w*1.4,560)}" height="${Math.min(w*1.4,560)*70/w}" role="img" aria-label="${N}">${s}</svg>`;}
+function clock(h,m){let s='<circle class="clk-f" cx="70" cy="70" r="64"/>';
+  for(let i=1;i<=12;i++){const a=i*Math.PI/6;s+=`<text class="clk-n" x="${(70+50*Math.sin(a)).toFixed(1)}" y="${(70-50*Math.cos(a)).toFixed(1)}">${i}</text>`;}
+  for(let i=0;i<60;i++){const a=i*Math.PI/30,l=i%5?3:0;s+=`<line x1="${(70+(60-l)*Math.sin(a)).toFixed(1)}" y1="${(70-(60-l)*Math.cos(a)).toFixed(1)}" x2="${(70+61*Math.sin(a)).toFixed(1)}" y2="${(70-61*Math.cos(a)).toFixed(1)}" stroke="var(--ink)" stroke-width="${i%5?1:0}"/>`;}
+  const ha=((h%12)+m/60)*Math.PI/6,ma=m*Math.PI/30;
+  s+=`<line class="hand" stroke-width="7" x1="70" y1="70" x2="${(70+32*Math.sin(ha)).toFixed(1)}" y2="${(70-32*Math.cos(ha)).toFixed(1)}"/>`;
+  s+=`<line class="hand m" stroke-width="4" x1="70" y1="70" x2="${(70+48*Math.sin(ma)).toFixed(1)}" y2="${(70-48*Math.cos(ma)).toFixed(1)}"/><circle cx="70" cy="70" r="5" fill="var(--ink)"/>`;
+  return `<svg viewBox="0 0 140 140" width="190" height="190" role="img" aria-label="${h}:${String(m).padStart(2,'0')}">${s}</svg>`;}
+function coins(list){let s='',x=4;
+  for(const v of list){if(v>=10&&list.length&&v>=20){s+=`<rect class="bill" x="${x}" y="8" width="84" height="48" rx="6"/><text class="bill-t" x="${x+42}" y="32">${v}</text>`;x+=92;}
+    else{const col=v>=10?'#ffd35c':v>=5?'#e8b94a':'#f1c96b';s+=`<circle class="coin" cx="${x+25}" cy="32" r="${v>=10?25:v>=5?22:19}" fill="${col}" stroke="#a9780f"/><text class="coin-t" x="${x+25}" y="32">${v}</text>`;x+=56;}}
+  return `<svg viewBox="0 0 ${x} 64" width="${x}" height="64" role="img" aria-label="coins">${s}</svg>`;}
+function poly(n,rot,sz){sz=sz||60;const pts=[];for(let i=0;i<n;i++){const a=rot+i*2*Math.PI/n;pts.push((70+sz*Math.cos(a)).toFixed(1)+','+(70+sz*Math.sin(a)).toFixed(1));}
+  return `<svg viewBox="0 0 140 140" width="140" height="140" role="img"><polygon class="shape" points="${pts.join(' ')}"/></svg>`;}
+function rectDraw(w,h,wl,hl,grid){const s=grid?26:Math.min(190/w,110/h),W=w*s,H=h*s;let g='';
+  if(grid){for(let i=1;i<w;i++)g+=`<line x1="${i*s}" y1="0" x2="${i*s}" y2="${H}" stroke="var(--violet)" stroke-opacity=".5"/>`;for(let j=1;j<h;j++)g+=`<line x1="0" y1="${j*s}" x2="${W}" y2="${j*s}" stroke="var(--violet)" stroke-opacity=".5"/>`;}
+  return `<svg viewBox="-30 -26 ${W+60} ${H+54}" width="${W+60}" height="${H+54}" role="img"><rect class="shape" x="0" y="0" width="${W}" height="${H}"/>${g}<text class="lbl" x="${W/2}" y="-8" text-anchor="middle">${wl}</text><text class="lbl" x="${W+6}" y="${H/2+5}">${hl}</text></svg>`;}
+function triDraw(b,h){const s=Math.min(200/b,110/h),B=b*s,H=h*s,ax=B*.35;
+  return `<svg viewBox="-20 -14 ${B+60} ${H+50}" width="${B+60}" height="${H+50}" role="img"><polygon class="shape" points="0,${H} ${B},${H} ${ax},0"/><line x1="${ax}" y1="0" x2="${ax}" y2="${H}" stroke="var(--accent)" stroke-width="3" stroke-dasharray="6 5"/><text class="lbl" x="${B/2}" y="${H+22}" text-anchor="middle">${L('base','base')} = ${b}</text><text class="lbl" x="${ax+6}" y="${H/2}">${L('height','altura')} = ${h}</text></svg>`;}
+function boxDraw(l,w,h){const s=Math.min(110/l,60/h,60/w)*1.2,a=l*s,b=h*s,d=w*s*.55;
+  return `<svg viewBox="-10 -10 ${a+d+90} ${b+d+40}" width="${a+d+90}" height="${b+d+40}" role="img"><polygon class="shape" points="0,${d} ${a},${d} ${a},${b+d} 0,${b+d}"/><polygon class="shape" points="0,${d} ${d},0 ${a+d},0 ${a},${d}"/><polygon class="shape" points="${a},${d} ${a+d},0 ${a+d},${b} ${a},${b+d}"/><text class="lbl" x="${a/2}" y="${b+d+18}" text-anchor="middle">${l}</text><text class="lbl" x="${a+d+8}" y="${b/2+4}">${h}</text><text class="lbl" x="${a+d*.45+4}" y="${d*.4}">${w}</text></svg>`;}
+function angleDraw(deg){const rad=deg*Math.PI/180,X=40,Y=100,len=100,ex=X+len*Math.cos(rad),ey=Y-len*Math.sin(rad);
+  const arc=deg===90?`<path d="M${X+20} ${Y}V${Y-20}H${X}" fill="none" stroke="var(--accent)" stroke-width="3"/>`:`<path d="M${X+30} ${Y}A30 30 0 0 0 ${(X+30*Math.cos(rad)).toFixed(1)} ${(Y-30*Math.sin(rad)).toFixed(1)}" fill="none" stroke="var(--accent)" stroke-width="3"/>`;
+  return `<svg viewBox="0 0 160 120" width="200" height="150" role="img"><path d="M${ex.toFixed(1)} ${ey.toFixed(1)}L${X} ${Y}L${X+len} ${Y}" fill="none" stroke="var(--ink)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>${arc}</svg>`;}
+const seqBox=(arr,hide)=>`<div class="seq">${arr.map((v,i)=>i===hide?'<b class="q">?</b>':`<b>${fmt(v)}</b>`).join('')}</div>`;
+function pip(mood,size){size=size||110;
+  const eyes={cheer:'<path d="M38 54q7-9 14 0M68 54q7-9 14 0" stroke="#2a1a14" stroke-width="4" fill="none" stroke-linecap="round"/>',
+    sad:'<circle cx="45" cy="56" r="5.500" fill="#2a1a14"/><circle cx="75" cy="56" r="5.500" fill="#2a1a14"/><path d="M36 46l16 4M84 46l-16 4" stroke="#2a1a14" stroke-width="3" stroke-linecap="round"/>'}[mood]||
+    '<circle cx="45" cy="56" r="6" fill="#2a1a14"/><circle cx="75" cy="56" r="6" fill="#2a1a14"/><circle cx="47" cy="54" r="2" fill="#fff"/><circle cx="77" cy="54" r="2" fill="#fff"/>';
+  const mouth={cheer:'<path d="M44 70q16 26 32 0z" fill="#7a2a1a"/><path d="M52 80q8 6 16 0" fill="#ff8b94"/>',sad:'<path d="M48 80q12-12 24 0" stroke="#2a1a14" stroke-width="3.500" fill="none" stroke-linecap="round"/>',
+    think:'<path d="M50 77q10-4 20 1" stroke="#2a1a14" stroke-width="3.500" fill="none" stroke-linecap="round"/>'}[mood]||'<path d="M48 72q12 12 24 0" stroke="#2a1a14" stroke-width="3.500" fill="none" stroke-linecap="round"/>';
+  return `<svg viewBox="0 0 120 120" width="${size}" height="${size}" role="img" aria-label="Pip"><path d="M22 44L30 8l28 20z" fill="#ff8a2a"/><path d="M98 44L90 8 62 28z" fill="#ff8a2a"/><path d="M30 36l4-16 12 10z" fill="#ffc9a0"/><path d="M90 36l-4-16-12 10z" fill="#ffc9a0"/>
+  <ellipse cx="60" cy="62" rx="44" ry="40" fill="#ff8a2a"/><ellipse cx="60" cy="74" rx="26" ry="19" fill="#fff1e2"/>${eyes}<ellipse cx="60" cy="65" rx="5.500" ry="4.200" fill="#3a2418"/>${mouth}
+  <circle cx="30" cy="68" r="6" fill="#ff6f6f" opacity=".35"/><circle cx="90" cy="68" r="6" fill="#ff6f6f" opacity=".35"/>
+  <path d="M60 104L42 95v18zM60 104l18-9v18z" fill="#5b3df5"/><circle cx="60" cy="104" r="4.500" fill="#3a2dbf"/></svg>`;}
+const starsRow=(n,max,cls)=>`<span class="stars ${cls||''}" role="img" aria-label="${n}/${max}">`+Array.from({length:max},(_,i)=>`<svg class="${i<n?'':'off'}"><use href="#i-star"/></svg>`).join('')+'</span>';
+const ICONS={
+  count:'<circle cx="7" cy="21" r="4"/><circle cx="16" cy="11" r="4"/><circle cx="25" cy="21" r="4"/>',
+  add:'<path d="M16 5v22M5 16h22" stroke-width="4.500"/>',sub:'<path d="M5 16h22" stroke-width="4.500"/>',
+  mul:'<path d="M8 8l16 16M24 8L8 24" stroke-width="4.500"/>',div:'<path d="M5 16h22" stroke-width="4"/><circle cx="16" cy="7" r="2.500" fill="currentColor"/><circle cx="16" cy="25" r="2.500" fill="currentColor"/>',
+  frac:'<circle cx="16" cy="16" r="11" stroke-width="3"/><path d="M16 16V5a11 11 0 0 1 11 11z" fill="currentColor"/>',
+  place:'<rect x="4" y="12" width="12" height="12" fill="currentColor" opacity=".35" stroke-width="2.500"/><rect x="19" y="6" width="4" height="18" fill="currentColor" stroke-width="2"/><rect x="26" y="19" width="4" height="5" fill="currentColor"/>',
+  time:'<circle cx="16" cy="16" r="12" stroke-width="3"/><path d="M16 8v8l5 3" stroke-width="3"/>',
+  money:'<circle cx="16" cy="16" r="12" stroke-width="3"/><text x="16" y="22" text-anchor="middle" font-size="17" font-weight="700" fill="currentColor" stroke="none">$</text>',
+  geo:'<path d="M16 4L29 27H3z" stroke-width="3.500"/>',pattern:'<path d="M3 22L9 10l7 12 7-12 6 12" stroke-width="3.500"/>',
+  word:'<path d="M6 6h20a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H14l-6 5v-5H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z" stroke-width="3"/><path d="M10 12h12M10 16h8" stroke-width="2.500"/>'};
+const icon=id=>`<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[id]}</svg>`;
+const ITEMSYM=[['apple','apples','manzanas',1],['balloon','balloons','globos',0],['cookie','cookies','galletas',1],['starc','stars','estrellas',1]];
+const SHAPES=[{k:'circle',en:'circle',es:'círculo',n:0,s:0},{k:'square',en:'square',es:'cuadrado',n:4,s:4},{k:'triangle',en:'triangle',es:'triángulo',n:3,s:3},{k:'rectangle',en:'rectangle',es:'rectángulo',n:4,s:4},
+  {k:'pentagon',en:'pentagon',es:'pentágono',n:5,s:5},{k:'hexagon',en:'hexagon',es:'hexágono',n:6,s:6},{k:'octagon',en:'octagon',es:'octágono',n:8,s:8}];
+function shapeDraw(k){
+  if(k==='circle')return '<svg viewBox="0 0 140 140" width="140" height="140" role="img"><circle class="shape" cx="70" cy="70" r="58"/></svg>';
+  if(k==='square')return '<svg viewBox="0 0 140 140" width="140" height="140" role="img"><rect class="shape" x="18" y="18" width="104" height="104" rx="2"/></svg>';
+  if(k==='rectangle')return '<svg viewBox="0 0 160 120" width="170" height="128" role="img"><rect class="shape" x="10" y="26" width="140" height="70" rx="2"/></svg>';
+  const n={triangle:3,pentagon:5,hexagon:6,octagon:8}[k];return poly(n,-Math.PI/2+(n%2===0?Math.PI/n:0));}
+
+/* ============================================================ generators ============ */
+function genCount(g,d){
+  const hi=[[10,15,20],[20,50,100],[100,500,1000],[1e4,5e4,1e5],[1e5,5e5,1e6],[1e6,5e6,1e7]][g-1][d];
+  const types=g===1?['count','count','cmp','next']:g===2?['count','cmp','next','parity','between']:g===3?['cmp','next','parity','between']:g<6?['cmp','next','between','parity']:['cmp','neg','between','parity'];
+  const t=pick(types);
+  if(t==='count'){const n=r(3,g===1?[8,12,20][d]:20),it=pick(ITEMSYM),nm=L(it[1],it[2]);
+    return numChoice(L(`How many ${nm} do you see?`,`¿${it[3]?'Cuántas':'Cuántas'} ${nm} ves?`),items(n,it[0],{per:5,sz:36}),n,0,L('Touch each one as you count. Say the numbers out loud.','Toca cada una mientras cuentas. Di los números en voz alta.'),L(`There are ${n}.`,`Hay ${n}.`));}
+  if(t==='cmp'){const big=Math.random()<.5,cnt=d===0?2:3,set=new Set();let guard=0;while(set.size<cnt&&guard++<50)set.add(r(g===1?0:Math.ceil(hi/10),hi));
+    const arr=Array.from(set),ans=big?Math.max.apply(null,arr):Math.min.apply(null,arr);
+    return choiceQ(L(big?'Which number is the biggest?':'Which number is the smallest?',big?'¿Cuál es el número más grande?':'¿Cuál es el número más pequeño?'),'',fmt(ans),arr.map(fmt),
+      L('Compare the digits from the left. The number with more tens, hundreds... is bigger.','Compara las cifras desde la izquierda. El que tiene más decenas, centenas... es mayor.'),L(`${fmt(ans)} is the ${big?'biggest':'smallest'}.`,`${fmt(ans)} es el ${big?'más grande':'más pequeño'}.`));}
+  if(t==='next'){const kind=g<3?pick(['after','before']):pick(['after','before','p10','m10','p100']);let n=r(g===1?1:10,Math.max(12,hi-1)),ans,q;
+    if(kind==='after'){ans=n+1;q=L(`What number comes right after ${fmt(n)}?`,`¿Qué número va justo después de ${fmt(n)}?`);}
+    else if(kind==='before'){ans=n-1;q=L(`What number comes right before ${fmt(n)}?`,`¿Qué número va justo antes de ${fmt(n)}?`);}
+    else if(kind==='p10'){ans=n+10;q=L(`What is 10 more than ${fmt(n)}?`,`¿Cuánto es 10 más que ${fmt(n)}?`);}
+    else if(kind==='m10'){n=Math.max(n,20);ans=n-10;q=L(`What is 10 less than ${fmt(n)}?`,`¿Cuánto es 10 menos que ${fmt(n)}?`);}
+    else{n=Math.max(n,200);ans=n+100;q=L(`What is 100 more than ${fmt(n)}?`,`¿Cuánto es 100 más que ${fmt(n)}?`);}
+    return numChoice(q,'',ans,0,L('Think of a number line. More means move right, less means move left.','Piensa en una recta numérica. Más es a la derecha, menos es a la izquierda.'),`${fmt(ans)}`);}
+  if(t==='parity'){const n=r(2,Math.min(hi,g<4?99:9999)),ev=n%2===0;
+    return choiceQ(L(`Is ${fmt(n)} even or odd?`,`¿${fmt(n)} es par o impar?`),'',ev?L('Even','Par'):L('Odd','Impar'),[L('Even','Par'),L('Odd','Impar')],
+      L('Look at the last digit. 0, 2, 4, 6, 8 means even.','Mira la última cifra. 0, 2, 4, 6, 8 es par.'),L(`The last digit is ${n%10}, so ${fmt(n)} is ${ev?'even':'odd'}.`,`La última cifra es ${n%10}, así que ${fmt(n)} es ${ev?'par':'impar'}.`));}
+  if(t==='between'){const a=r(g===1?1:10,Math.max(12,Math.min(hi,999))),k=r(1,3),b=a+4;
+    return numChoice(L(`Which number is between ${fmt(a)} and ${fmt(b)}?`,`¿Qué número está entre ${fmt(a)} y ${fmt(b)}?`),'',a+k,0,L('It must be bigger than the first number and smaller than the second.','Debe ser mayor que el primero y menor que el segundo.'),`${fmt(a)} < ${fmt(a+k)} < ${fmt(b)}`);}
+  const set=new Set();while(set.size<3)set.add(r(-10,10));const arr=Array.from(set),ans=Math.min.apply(null,arr);
+  return choiceQ(L('Which temperature is the coldest?','¿Qué temperatura es la más fría?'),'',ans+'°',arr.map(x=>x+'°'),
+    L('On a number line, numbers further left are smaller. Negative numbers are left of zero.','En la recta numérica, los números más a la izquierda son menores. Los negativos están a la izquierda del cero.'),L(`${ans}° is the smallest.`,`${ans}° es el menor.`));
+}
+function genAdd(g,d){
+  if(g>=5){const pl=g===5?1:2,k=Math.pow(10,pl),hi=(g===5?[99,300,990]:[999,3000,9990])[d];
+    const a=r(k+1,hi)/k,b=r(k+1,hi)/k,s=rnd(a+b,pl);
+    return numQ(`${fmtF(a,pl)} + ${fmtF(b,pl)} = ?`,'',s,true,L('Line up the decimal points, then add column by column.','Alinea las comas decimales y suma columna por columna.'),`${fmtF(a,pl)} + ${fmtF(b,pl)} = ${fmtF(s,pl)}`);}
+  const max=[[5,10,20],[30,60,100],[200,500,1000],[2000,5000,10000]][g-1][d];let a,b;
+  if(g===1){a=r(1,max-1);b=r(1,max-a);}else{a=r(Math.ceil(max*.1),Math.ceil(max*.8));b=r(1,max-a);}
+  const vis=g===1&&a+b<=20?`<div class="eq">${items(a,'apple',{sz:26})}<span class="op">+</span>${items(b,'starc',{sz:26})}</div>`:'';
+  return arith(g,d,`${fmt(a)} + ${fmt(b)} = ?`,vis,a+b,false,
+    g===1?L('Count all the objects together.','Cuenta todos los objetos juntos.'):g===2?L('Add the tens first, then the ones.','Suma primero las decenas y luego las unidades.'):L('Add ones, then tens, then hundreds. Carry when you need to.','Suma unidades, luego decenas, luego centenas. Lleva cuando haga falta.'),`${fmt(a)} + ${fmt(b)} = ${fmt(a+b)}`);
+}
+function genSub(g,d){
+  if(g>=5){const pl=g===5?1:2,k=Math.pow(10,pl),hi=(g===5?[99,300,990]:[999,3000,9990])[d];
+    const A=r(k+2,hi),B=r(1,A-1),a=A/k,b=B/k,s=rnd(a-b,pl);
+    return numQ(`${fmtF(a,pl)} − ${fmtF(b,pl)} = ?`,'',s,true,L('Line up the decimal points, then subtract. Borrow when you need to.','Alinea las comas decimales y resta. Pide prestado cuando haga falta.'),`${fmtF(a,pl)} − ${fmtF(b,pl)} = ${fmtF(s,pl)}`);}
+  const max=[[5,10,20],[30,60,100],[200,500,1000],[2000,5000,10000]][g-1][d];let a,b;
+  if(g===1){a=r(2,max);b=r(1,a-1);}else{a=r(Math.ceil(max*.3),max);b=r(1,a-1);}
+  const vis=g===1&&a<=20?`<div class="eq">${items(a,'cookie',{sz:26,cross:b})}</div>`:'';
+  return arith(g,d,`${fmt(a)} − ${fmt(b)} = ?`,vis,a-b,false,
+    g===1?L('Start with all of them, then take away the crossed-out ones.','Empieza con todos y quita los tachados.'):g===2?L('Subtract the tens, then the ones. Or count up from the small number.','Resta las decenas y luego las unidades. O cuenta hacia arriba desde el número pequeño.'):L('Subtract column by column. Borrow when the top digit is smaller.','Resta columna por columna. Pide prestado cuando la cifra de arriba sea menor.'),`${fmt(a)} − ${fmt(b)} = ${fmt(a-b)}`);
+}
+function genMul(g,d){
+  let a,b,dec=false,ans,hint;
+  if(g===1){a=pick([[2],[5,10],[2,3,4,5]][d]);b=r(1,5);}
+  else if(g===2){a=pick([[2,5,10],[2,3,4,5,10],[2,3,4,5,6,7,8,9,10]][d]);b=r(1,10);}
+  else if(g===3){a=r(2,[5,8,10][d]);b=r(2,10);}
+  else if(g===4){a=[r(11,30),r(11,99),r(101,999)][d];b=r(2,[5,9,9][d]);}
+  else if(g===5){a=[r(12,40),r(100,500),r(100,999)][d];b=[r(11,20),r(11,30),r(12,60)][d];}
+  else{dec=true;if(d===0){a=r(11,99)/10;b=pick([10,100]);}else if(d===1){a=r(11,99)/10;b=r(2,9);}else{a=r(101,999)/100;b=r(2,9);}}
+  ans=dec?rnd(a*b,3):a*b;
+  const vis=g<=2&&a*b<=60&&a<=10&&b<=10?dotsArr(a,b):'';
+  hint=g<=2?L(`Think of ${a} groups with ${b} in each group.`,`Piensa en ${a} grupos con ${b} en cada uno.`):g===3?L('Use skip counting or a fact you already know.','Cuenta de salto en salto o usa un dato que ya sabes.'):
+    dec?L('Ignore the decimal point, multiply, then put the point back.','Ignora la coma, multiplica y luego vuelve a ponerla.'):L('Break it into parts: multiply the biggest place first, then add the pieces.','Sepáralo en partes: multiplica cada posición y suma los resultados.');
+  return arith(g,d,`${fmt(a)} × ${fmt(b)} = ?`,vis,ans,dec,hint,`${fmt(a)} × ${fmt(b)} = ${fmt(ans)}`);
+}
+function genDiv(g,d){
+  let a,b,q,vis='',dec=false,ans;
+  if(g===1){b=d===0?2:pick([2,3,5]);q=r(1,5);a=b*q;vis=`<div class="eq">${items(a,'cookie',{sz:26})}<span class="op">→</span>${plates(b)}</div>`;}
+  else if(g===2){b=pick([[2,5,10],[2,3,4,5,10],[2,3,4,5,6,7,8,9,10]][d]);q=r(1,10);a=b*q;}
+  else if(g===3){b=r(2,[5,8,10][d]);q=r(2,10);a=b*q;}
+  else if(g===4){b=r(2,[5,9,9][d]);q=[r(11,30),r(11,99),r(101,300)][d];a=b*q;}
+  else if(g===5){b=[r(11,15),r(11,30),r(12,45)][d];q=[r(11,40),r(20,99),r(50,200)][d];a=b*q;}
+  else{dec=true;b=pick([2,4,5]);a=r(7,[40,99,300][d]);q=rnd(a/b,2);}
+  ans=q;
+  return arith(g,d,`${fmt(a)} ÷ ${fmt(b)} = ?`,vis,ans,dec,
+    g===1?L('Give one to each plate again and again until none are left.','Pon uno en cada plato una y otra vez hasta que no quede ninguno.'):g<=3?L(`Ask yourself: ${b} times what number makes ${a}?`,`Pregúntate: ${b} por qué número da ${a}.`):L('Divide one place at a time, from the left. Check by multiplying back.','Divide una posición a la vez, desde la izquierda. Comprueba multiplicando.'),`${fmt(a)} ÷ ${fmt(b)} = ${fmt(ans)}`);
+}
+function genFrac(g,d){
+  const t=pick(g===1?['id']:g===2?['id','id','cmp']:g===3?['id','cmp','cmp']:g===4?['equiv','addSame','id']:g===5?['ofnum','addSame','equiv','addUnlike']:['simplify','addUnlike','ofnum','addUnlike']);
+  if(t==='id'){const dens=g===1?(d===0?[2,4]:[2,3,4]):g===2?[2,3,4,6,8]:[2,3,4,5,6,8,10],den=pick(dens),n=r(1,den-1);
+    const wrong=[F(den-n,den),F(n,den+1),F(Math.min(n+1,den),den),F(n,Math.max(den-1,2))].filter(x=>x!==F(n,den));
+    return choiceQ(L('What fraction of the circle is colored?','¿Qué fracción del círculo está coloreada?'),pie(n,den),F(n,den),wrong,
+      L('Count the colored parts (top number) and all the equal parts (bottom number).','Cuenta las partes coloreadas (arriba) y todas las partes iguales (abajo).'),L(`${n} of ${den} equal parts are colored.`,`${n} de ${den} partes iguales están coloreadas.`));}
+  if(t==='cmp'){const sameNum=g>=3&&d>=1&&Math.random()<.5;let a,b,x,y;
+    if(sameNum){x=pick([2,3,4,5,6,8]);y=pick([2,3,4,5,6,8].filter(v=>v!==x));a=[1,x];b=[1,y];}
+    else{const den=pick([4,5,6,8,10]);let n1=r(1,den-1),n2=r(1,den-1);if(n1===n2)n2=n1===den-1?1:n1+1;a=[n1,den];b=[n2,den];}
+    const aBig=a[0]/a[1]>b[0]/b[1],big=aBig?a:b;
+    return choiceQ(L('Which fraction is bigger?','¿Qué fracción es mayor?'),`<div class="eq"><div>${bar(a[0],a[1])}</div><div>${bar(b[0],b[1])}</div></div>`,F(big[0],big[1]),[F(a[0],a[1]),F(b[0],b[1])],
+      sameNum?L('Same top number: the smaller the bottom number, the bigger each piece.','Mismo numerador: cuanto menor el denominador, más grande es cada pedazo.'):L('Same bottom number: the bigger top number means more pieces.','Mismo denominador: el numerador mayor significa más pedazos.'),
+      L(`${big[0]}/${big[1]} covers more of the bar.`,`${big[0]}/${big[1]} cubre más de la barra.`));}
+  if(t==='equiv'){const b=r(2,6),a=r(1,b-1),k=r(2,5);
+    return numQ(`${F(a,b)} = ${F('?',b*k)}`,'',a*k,false,L('Multiply the top and the bottom by the same number.','Multiplica arriba y abajo por el mismo número.'),`${F(a,b)} = ${F(a*k,b*k)} (×${k})`);}
+  if(t==='addSame'){const den=r(3,12),a=r(1,den-2),b=r(1,g===4?den-a:den-1);
+    return numQ(`${F(a,den)} + ${F(b,den)} = ${F('?',den)}`,'',a+b,false,L('The bottom number stays the same. Just add the top numbers.','El denominador no cambia. Solo suma los numeradores.'),`${F(a,den)} + ${F(b,den)} = ${F(a+b,den)}`);}
+  if(t==='ofnum'){const dn=r(2,[5,8,10][Math.min(d,2)]),n=r(1,dn-1),k=r(2,[6,8,10][Math.min(d,2)]),tot=dn*k;
+    return numQ(L(`What is ${F(n,dn)} of ${tot}?`,`¿Cuánto es ${F(n,dn)} de ${tot}?`),'',n*k,false,L(`Divide ${tot} by ${dn}, then multiply by ${n}.`,`Divide ${tot} entre ${dn} y multiplica por ${n}.`),`${tot} ÷ ${dn} = ${k}; ${k} × ${n} = ${n*k}`);}
+  if(t==='addUnlike'){let a,b,e,c,den,num,wrong;
+    if(g===5){b=pick([2,3,4,5]);e=b*2;a=1;c=r(1,e-1);den=e;num=2*a+c;}
+    else{const pr=pick([[2,3],[2,5],[3,4],[3,5],[2,4]]);b=pr[0];e=pr[1];a=1;c=r(1,e-1);den=b*e;num=a*e+c*b;}
+    wrong=[F(a+c,b+e),F(num,b),F(a+c,den),F(num+1,den)];
+    if(g===5)wrong=[F(a+c,b+e),F(num,b),F(a+c,e),F(num+1,den)];
+    return choiceQ(`${F(a,b)} + ${F(c,e)} = ?`,'',F(num,den),wrong.filter(x=>x!==F(num,den)),L('First make the bottom numbers the same, then add the top numbers.','Primero iguala los denominadores y luego suma los numeradores.'),`${F(a,b)} + ${F(c,e)} = ${F(num,den)}`);}
+  const pairs=[[1,2],[2,3],[3,4],[1,3],[2,5],[3,5],[1,4],[3,8],[5,6]],p=pick(pairs),k=r(2,5);
+  return choiceQ(L(`Write ${F(p[0]*k,p[1]*k)} in simplest form.`,`Escribe ${F(p[0]*k,p[1]*k)} en su forma más simple.`),'',F(p[0],p[1]),[F(p[0]*k,p[1]),F(p[0],p[1]+1),F(p[0]+1,p[1]),F(p[0]*k,p[1]*k+1)],
+    L('Divide the top and the bottom by the same number until you can not go further.','Divide arriba y abajo entre el mismo número hasta que no se pueda más.'),`${F(p[0]*k,p[1]*k)} = ${F(p[0],p[1])} (÷${k})`);
+}
+function digitsDistinct(len){const ds=shuffle([0,1,2,3,4,5,6,7,8,9]);if(ds[0]===0){const i=ds.findIndex(x=>x!==0);ds[0]=ds[i];ds[i]=0;}return ds.slice(0,len);}
+function genPlace(g,d){
+  const t=pick(g===1?['blocks']:g===2?['blocks','digit']:g===3?['round','digit','blocks']:g===4?['digit','round','cmp']:g===5?['decDigit','cmpDec','roundDec']:['roundDec','cmpDec','decDigit']);
+  if(t==='blocks'){const N=g===1?[30,60,99][d]:[199,299,499][d],n=r(g===1?11:101,N);
+    return numQ(L('What number do the blocks show?','¿Qué número muestran los bloques?'),blocks(n),n,false,L('Big squares are 100, long rods are 10, small cubes are 1.','Los cuadrados grandes valen 100, las barras 10 y los cubitos 1.'),L(`${Math.floor(n/100)} hundreds, ${Math.floor(n/10)%10} tens, ${n%10} ones = ${n}`,`${Math.floor(n/100)} centenas, ${Math.floor(n/10)%10} decenas, ${n%10} unidades = ${n}`));}
+  if(t==='digit'){const len=g===2?3:g===3?4:6,ds=digitsDistinct(len),n=Number(ds.join('')),pos=r(0,len-1),dg=ds[pos];if(dg===0)return genPlace(g,d);
+    const v=dg*Math.pow(10,len-1-pos),others=[dg,dg*10,dg*100,dg*1000].filter(x=>x!==v);
+    return choiceQ(L(`What is the value of the digit ${dg} in ${fmt(n)}?`,`¿Cuál es el valor de la cifra ${dg} en ${fmt(n)}?`),'',fmt(v),others.map(fmt),
+      L('Find which place the digit is in: ones, tens, hundreds, thousands...','Busca en qué posición está la cifra: unidades, decenas, centenas, millares...'),L(`${dg} is in the ${fmt(v/dg)}s place, so it is worth ${fmt(v)}.`,`${dg} está en la posición de ${fmt(v/dg)}, vale ${fmt(v)}.`));}
+  if(t==='round'){const p=g===3?(d===0?10:pick([10,100])):pick([100,1000,10000]),n=g===3?r(11,d===0?99:999):r(1001,99999);
+    const ans=Math.round(n/p)*p,wr=[Math.floor(n/p)*p,Math.ceil(n/p)*p,Math.round(n/(p*10))*p*10,Math.round(n/(p/10))*(p/10)];
+    const nm=p===10?L('ten','decena'):p===100?L('hundred','centena'):p===1000?L('thousand','millar'):L('ten thousand','decena de millar');
+    return choiceQ(L(`Round ${fmt(n)} to the nearest ${fmt(p)}.`,`Redondea ${fmt(n)} al ${fmt(p)} más cercano.`),'',fmt(ans),wr.map(fmt),
+      L('Look at the digit to the right. 5 or more rounds up, 4 or less rounds down.','Mira la cifra de la derecha. 5 o más sube, 4 o menos baja.'),`${fmt(n)} ≈ ${fmt(ans)} (${nm})`);}
+  if(t==='cmp'){const a=r(1000,9999),b=Math.random()<.2?a:a+r(-99,99)*(Math.random()<.5?1:10),op=a<b?'<':a>b?'>':'=';
+    return choiceQ(L('Which symbol goes in the box?','¿Qué signo va en el recuadro?'),`<div class="prompt">${fmt(a)} ${BOX} ${fmt(b)}</div>`,op,['<','=','>'],
+      L('Compare digits from the left. The first different digit decides.','Compara las cifras desde la izquierda. La primera cifra distinta decide.'),`${fmt(a)} ${op} ${fmt(b)}`);}
+  if(t==='decDigit'){const ds=digitsDistinct(3),dg=ds[1]||ds[2]||5,n=Number(`${ds[0]}.${dg}${ds[2]===dg?(dg+1)%10:ds[2]}`),str=fmtF(n,2);
+    const pos=r(0,1)===0?'tenth':'hundredth',digit=pos==='tenth'?Number(String(n.toFixed(2)).split('.')[1][0]):Number(String(n.toFixed(2)).split('.')[1][1]);if(digit===0)return genPlace(g,d);
+    const v=rnd(pos==='tenth'?digit/10:digit/100,2),alt=[digit,rnd(digit/10,2),rnd(digit/100,2),digit*10].filter(x=>x!==v);
+    return choiceQ(L(`In ${str}, what is the value of the digit ${digit}?`,`En ${str}, ¿cuál es el valor de la cifra ${digit}?`),'',fmt(v),alt.map(fmt),
+      L('After the decimal point: tenths first, then hundredths.','Después de la coma: primero décimas y luego centésimas.'),L(`${digit} is in the ${pos}s place: ${fmt(v)}.`,`${digit} está en las ${pos==='tenth'?'décimas':'centésimas'}: ${fmt(v)}.`));}
+  if(t==='cmpDec'){let a=r(1,99)/10,b=r(1,999)/100;if(Math.random()<.2)b=a;
+    const op=a<b?'<':a>b?'>':'=',sa=Math.random()<.5?fmtF(a,2):fmtF(a,1);
+    return choiceQ(L('Which symbol goes in the box?','¿Qué signo va en el recuadro?'),`<div class="prompt">${a===b?fmtF(a,1):sa} ${BOX} ${fmtF(b,2)}</div>`,op,['<','=','>'],
+      L('Give both numbers the same number of decimal places, then compare.','Escribe ambos con las mismas cifras decimales y compara.'),`${fmtF(a,2)} ${op} ${fmtF(b,2)}`);}
+  const dec=Math.random()<.5?1:0,n=r(101,9999)/100,ans=rnd(n,dec);
+  return choiceQ(L(`Round ${fmtF(n,2)} to the nearest ${dec?'tenth':'whole number'}.`,`Redondea ${fmtF(n,2)} a ${dec?'la décima más cercana':'la unidad más cercana'}.`),'',fmt(ans),
+    numOpts(ans,dec).map(fmt),L('Look at the next digit to the right. 5 or more rounds up.','Mira la cifra de la derecha. 5 o más sube.'),`${fmtF(n,2)} ≈ ${fmt(ans)}`);
+}
+const T12=(h,m)=>`${h}:${String(m).padStart(2,'0')}`;
+function genTime(g,d){
+  if(g<=3){const h=r(1,12),m=g===1?(d===0?0:pick([0,30])):g===2?(d===0?pick([0,15,30,45]):pick([0,5,10,15,20,25,30,35,40,45,50,55])):(d===0?pick([5,10,20,25,35,40,50,55]):r(1,59)),
+      ans=T12(h,m),w=[T12(h%12+1,m),T12(h,(m+30)%60),T12(((m/5)|0)||12,h*5%60),T12((h+10)%12+1,m),T12(h,(m+15)%60)];
+    return choiceQ(L('What time does the clock show?','¿Qué hora marca el reloj?'),clock(h,m),ans,w.filter(x=>x!==ans),
+      L('The short thick hand shows the hour. The long orange hand shows the minutes.','La aguja corta y gruesa marca la hora. La larga y naranja marca los minutos.'),L(`Hour hand near ${h}, minute hand at ${m}: ${ans}.`,`La aguja de la hora cerca del ${h}, los minutos en ${m}: ${ans}.`));}
+  if(g===4){const h=r(1,10),m=pick([0,15,30,45]),dur=pick([15,20,25,30,35,40,45,50,60,75,90]),tot=h*60+m+dur,eh=Math.floor(tot/60)%12||12,em=tot%60,ans=T12(eh,em);
+    const w=[T12(eh,(em+10)%60),T12(eh%12+1,em),T12(eh,(em+50)%60),T12((eh+10)%12+1,em)];
+    return choiceQ(L(`Class starts at ${T12(h,m)} and lasts ${dur} minutes. When does it end?`,`La clase empieza a las ${T12(h,m)} y dura ${dur} minutos. ¿A qué hora termina?`),clock(h,m),ans,w.filter(x=>x!==ans),
+      L('Add the minutes in steps. Every 60 minutes makes one more hour.','Suma los minutos por pasos. Cada 60 minutos son una hora más.'),`${T12(h,m)} + ${dur} min = ${ans}`);}
+  if(g===5){const H=r(13,23),m=pick([0,15,30,45]),pm=H-12;
+    if(d===0||Math.random()<.5){const ans=T12(pm,m)+' PM';return choiceQ(L(`Which is ${H}:${String(m).padStart(2,'0')} in 12-hour time?`,`¿Cómo se escribe ${H}:${String(m).padStart(2,'0')} en formato de 12 horas?`),'',ans,[T12(pm,m)+' AM',T12(H,m)+' PM',T12(pm+1,m)+' PM'],
+      L('For afternoon hours in 24-hour time, subtract 12 and write PM.','Para horas de la tarde en formato de 24 horas, resta 12 y escribe PM.'),`${H} − 12 = ${pm}`);}
+    const ans=`${H}:${String(m).padStart(2,'0')}`;return choiceQ(L(`Which is ${T12(pm,m)} PM in 24-hour time?`,`¿Cómo se escribe ${T12(pm,m)} PM en formato de 24 horas?`),'',ans,[`${pm}:${String(m).padStart(2,'0')}`,`${H+1>23?12:H+1}:${String(m).padStart(2,'0')}`,`${pm+10}:${String(m).padStart(2,'0')}`],
+      L('For PM hours, add 12.','Para horas PM, suma 12.'),`${pm} + 12 = ${H}`);}
+  const h1=r(6,14),m1=pick([0,5,10,15,20,25,30,35,40,45,50,55]),mins=r(40,[180,260,360][d]),t2=h1*60+m1+mins,h2=Math.floor(t2/60),m2=t2%60;
+  const p=x=>`${x[0]}:${String(x[1]).padStart(2,'0')}`;
+  return numQ(L(`How many minutes pass from ${p([h1,m1])} to ${p([h2,m2])}?`,`¿Cuántos minutos pasan de las ${p([h1,m1])} a las ${p([h2,m2])}?`),'',mins,false,
+    L('Count the hours first (each is 60 minutes), then the extra minutes.','Cuenta primero las horas (cada una son 60 minutos) y luego los minutos extra.'),`${Math.floor(mins/60)} h × 60 + ${mins%60} = ${mins}`);
+}
+function genMoney(g,d){
+  const sy=g<=3?'':'$';
+  if(g===1){const vals=[1,2,5,10],n=r(2,[3,4,4][d]);let list,tot,guard=0;do{list=Array.from({length:n},()=>pick(vals));tot=list.reduce((a,b)=>a+b,0);}while(tot>[10,20,30][d]&&guard++<40);
+    if(tot>[10,20,30][d]){list=[5,2,1];tot=8;}
+    return numChoice(L('How much money is this in total?','¿Cuánto dinero hay en total?'),coins(list),tot,0,L('Start with the biggest coin, then add the others.','Empieza por la moneda más grande y suma las demás.'),list.join(' + ')+' = '+tot);}
+  if(g===2){const vals=[1,2,5,10,20,50],n=r(3,[4,5,6][d]);let list=Array.from({length:n},()=>pick(vals)).sort((a,b)=>b-a),tot=list.reduce((a,b)=>a+b,0);
+    if(tot>120){list=[50,20,10,5];tot=85;}
+    return numQ(L('How much money is this in total?','¿Cuánto dinero hay en total?'),coins(list),tot,false,L('Add the big ones first, then the small ones.','Suma primero las grandes y luego las pequeñas.'),list.join(' + ')+' = '+tot);}
+  const q25=()=>r(2,[20,40,40][d])*0.25;
+  if(g===3){const a=q25(),b=q25(),s=rnd(a+b,2);
+    return numQ(L('What is the total cost in dollars?','¿Cuál es el costo total en dólares?'),`<div class="eq"><span class="tag">$${fmtF(a,2)}</span><span class="op">+</span><span class="tag">$${fmtF(b,2)}</span></div>`,s,true,L('Line up the decimal points and add.','Alinea las comas y suma.'),`$${fmtF(a,2)} + $${fmtF(b,2)} = $${fmtF(s,2)}`);}
+  if(g===4){const pay=pick([5,10,20]),cost=r(4,pay*4-1)*0.25,ch=rnd(pay-cost,2);
+    return numQ(L(`You pay $${pay} for something that costs $${fmtF(cost,2)}. How many dollars of change do you get?`,`Pagas $${pay} por algo que cuesta $${fmtF(cost,2)}. ¿Cuántos dólares de cambio recibes?`),`<span class="tag">$${fmtF(cost,2)}</span>`,ch,true,L('Change = what you paid minus the cost.','Cambio = lo que pagaste menos el costo.'),`$${pay} − $${fmtF(cost,2)} = $${fmtF(ch,2)}`);}
+  if(g===5){const qty=r(2,9),unit=r(4,[24,40,60][d])*0.25,tot=rnd(qty*unit,2),th=L('notebooks','cuadernos');
+    return numQ(L(`${qty} ${th} cost $${fmtF(unit,2)} each. What is the total cost in dollars?`,`${qty} ${th} cuestan $${fmtF(unit,2)} cada uno. ¿Cuál es el costo total en dólares?`),'',tot,true,L('Multiply the price of one by how many you buy.','Multiplica el precio de uno por cuántos compras.'),`${qty} × $${fmtF(unit,2)} = $${fmtF(tot,2)}`);}
+  const price=r(2,20)*10,pct=pick([[10,50],[10,20,25,50],[5,10,15,20,25,30,40,50]][d]),sale=rnd(price*(1-pct/100),2);
+  return numQ(L(`A $${price} jacket is ${pct}% off. What is the new price in dollars?`,`Una chaqueta de $${price} tiene ${pct}% de descuento. ¿Cuál es el nuevo precio en dólares?`),'',sale,true,
+    L(`Find ${pct}% of the price, then subtract it.`,`Calcula el ${pct}% del precio y réstalo.`),`${pct}% of ${price} = ${fmt(rnd(price*pct/100,2))}; ${price} − ${fmt(rnd(price*pct/100,2))} = ${fmt(sale)}`);
+}
+function genGeo(g,d){
+  if(g<=2){const pool=g===1?SHAPES.slice(0,4):SHAPES.slice(1),sh=pick(pool),ask=g===1?(d===0?'name':pick(['name','sides'])):(d===0?'sides':pick(['sides','name']));
+    if(ask==='name'){const nm=x=>L(x.en,x.es);return choiceQ(L('What is the name of this shape?','¿Cómo se llama esta figura?'),shapeDraw(sh.k),nm(sh),shuffle(pool.filter(x=>x!==sh)).slice(0,3).map(nm),
+      L('Count the sides and corners. Does it have curves?','Cuenta los lados y las esquinas. ¿Tiene curvas?'),L(`It is a ${sh.en}.`,`Es un ${sh.es}.`));}
+    return numChoice(L('How many sides does this shape have?','¿Cuántos lados tiene esta figura?'),shapeDraw(sh.k),sh.s,0,L('Put a finger on one side and count all the way around.','Pon un dedo en un lado y cuenta dando toda la vuelta.'),L(`${sh.s} sides.`,`${sh.s} lados.`));}
+  if(g===3){const sq=d===0&&Math.random()<.5,w=r(2,12),h=sq?w:r(2,9),p=2*(w+h);
+    return numQ(L('What is the perimeter?','¿Cuál es el perímetro?'),rectDraw(w,h,w,h,false),p,false,L('Perimeter is the distance all the way around: add all four sides.','El perímetro es la distancia alrededor: suma los cuatro lados.'),`${w} + ${h} + ${w} + ${h} = ${p}`);}
+  if(g===4){if(Math.random()<.5){const w=r(3,[6,8,8][d]),h=r(2,[4,5,6][d]);
+      return numQ(L('Each square is 1 unit. What is the area?','Cada cuadrito mide 1 unidad. ¿Cuál es el área?'),rectDraw(w,h,w,h,true),w*h,false,L('Area is how many squares fit inside. Multiply rows by columns.','El área es cuántos cuadritos caben. Multiplica filas por columnas.'),`${w} × ${h} = ${w*h}`);}
+    const deg=pick([30,45,60,90,120,135,150]),ans=deg<90?L('Acute','Agudo'):deg===90?L('Right','Recto'):L('Obtuse','Obtuso');
+    return choiceQ(L('What kind of angle is this?','¿Qué tipo de ángulo es este?'),angleDraw(deg),ans,[L('Acute','Agudo'),L('Right','Recto'),L('Obtuse','Obtuso')],
+      L('Right angles look like the corner of a book. Smaller is acute, wider is obtuse.','Un ángulo recto es como la esquina de un libro. Más pequeño es agudo, más abierto es obtuso.'),L(`It is ${deg<90?'smaller than':deg===90?'exactly':'bigger than'} a right angle.`,`Es ${deg<90?'menor que':deg===90?'igual a':'mayor que'} un ángulo recto.`));}
+  if(g===5||Math.random()<.5){const b=r(3,[8,10,12][d]),h=r(2,[6,8,10][d]),bb=(b*h)%2?b+1:b;
+    return numQ(L('What is the area of this triangle?','¿Cuál es el área de este triángulo?'),triDraw(bb,h),bb*h/2,false,L('A triangle is half of a rectangle: base × height ÷ 2.','Un triángulo es la mitad de un rectángulo: base × altura ÷ 2.'),`${bb} × ${h} ÷ 2 = ${bb*h/2}`);}
+  const l=r(2,[6,8,10][d]),w=r(2,6),h=r(2,6);
+  return numQ(L('What is the volume of this box (cubic units)?','¿Cuál es el volumen de esta caja (unidades cúbicas)?'),boxDraw(l,w,h),l*w*h,false,L('Volume = length × width × height.','Volumen = largo × ancho × alto.'),`${l} × ${w} × ${h} = ${l*w*h}`);
+}
+function genPattern(g,d){
+  if(g<=4){let seq,hide,step;
+    if(g===1){step=pick(d===0?[1,2]:[1,2,5,10]);const s0=r(0,10);seq=[0,1,2,3,4].map(i=>s0+i*step);hide=4;}
+    else if(g===2){step=pick([2,3,4,5,10]);const s0=r(0,3)*step;seq=[0,1,2,3,4].map(i=>s0+i*step);hide=r(1,4);}
+    else if(g===3){step=pick(d===0?[3,4,6,7]:d===1?[6,7,8,9,25]:[12,25,50,100]);const s0=r(0,5)*step;seq=[0,1,2,3,4].map(i=>s0+i*step);hide=r(1,4);
+      if(Math.random()<.3){const top=seq[4];seq=[0,1,2,3,4].map(i=>top-i*step);hide=r(1,4);}}
+    else{if(Math.random()<.5){const rt=pick(d===0?[2]:[2,3]),s0=r(1,5);seq=[0,1,2,3,4].map(i=>s0*Math.pow(rt,i));hide=r(3,4);step=null;}
+      else{step=pick([13,17,25,35,125]);const s0=r(0,5)*step;seq=[0,1,2,3,4].map(i=>s0+i*step);hide=r(1,4);}}
+    seq=seq.map(v=>Math.max(0,v));const ans=seq[hide];
+    return arith(g,d,L('What number goes in the empty box?','¿Qué número va en el recuadro vacío?'),seqBox(seq,hide),ans,false,
+      L('Look at how much the numbers change from one box to the next. Find the rule.','Mira cuánto cambian los números de una casilla a la siguiente. Encuentra la regla.'),L(`The rule gives ${fmt(ans)}.`,`La regla da ${fmt(ans)}.`));}
+  if(g===5){const t=pick(['a','b','c','d']),x=r(2,[12,30,60][d]),b=r(2,[9,20,50][d]);
+    if(t==='a')return numQ(`${BOX} + ${b} = ${x+b}`,'',x,false,L('Undo the adding: subtract.','Deshaz la suma: resta.'),`${x+b} − ${b} = ${x}`);
+    if(t==='b')return numQ(`${x+b} − ${BOX} = ${x}`,'',b,false,L('How much was taken away? Subtract the result from the start.','¿Cuánto se quitó? Resta el resultado del inicio.'),`${x+b} − ${x} = ${b}`);
+    const m=r(2,9),y=r(2,[9,12,12][d]);
+    if(t==='c')return numQ(`${m} × ${BOX} = ${m*y}`,'',y,false,L('Undo the multiplying: divide.','Deshaz la multiplicación: divide.'),`${m*y} ÷ ${m} = ${y}`);
+    return numQ(`${BOX} ÷ ${m} = ${y}`,'',m*y,false,L('Undo the dividing: multiply.','Deshaz la división: multiplica.'),`${y} × ${m} = ${m*y}`);}
+  const t=pick(['a','b','c','d']),x=r(2,[12,25,50][d]),b=r(2,[12,30,60][d]),m=r(2,9);
+  if(t==='a')return numQ(`x + ${b} = ${x+b}`,'',x,false,L('Subtract the same number from both sides.','Resta el mismo número en ambos lados.'),`x = ${x+b} − ${b} = ${x}`);
+  if(t==='b')return numQ(`${m}x = ${m*x}`,'',x,false,L('Divide both sides by the number next to x.','Divide ambos lados entre el número junto a x.'),`x = ${m*x} ÷ ${m} = ${x}`);
+  if(t==='c')return numQ(`${m}x + ${b} = ${m*x+b}`,'',x,false,L('First subtract, then divide.','Primero resta y luego divide.'),`${m*x+b} − ${b} = ${m*x}; ${m*x} ÷ ${m} = ${x}`);
+  return numQ(`x ÷ ${m} = ${x}`,'',m*x,false,L('Multiply both sides by the number.','Multiplica ambos lados por el número.'),`x = ${x} × ${m} = ${m*x}`);
+}
+const NAMES=['Mia','Leo','Sofía','Max','Zoe','Sam','Ana','Noah','Luca','Emma'];
+const THINGS=[{en:'apples',es:'manzanas',f:1},{en:'stickers',es:'stickers',f:0},{en:'marbles',es:'canicas',f:1},{en:'books',es:'libros',f:0},{en:'cookies',es:'galletas',f:1},{en:'pencils',es:'lápices',f:0},{en:'balloons',es:'globos',f:0},{en:'shells',es:'conchas',f:1}];
+function genWord(g,d){
+  const nm=pick(NAMES),nm2=pick(NAMES.filter(x=>x!==nm)),it=pick(THINGS),th=L(it.en,it.es),C=it.f?'Cuántas':'Cuántos',c=it.f?'cuántas':'cuántos';
+  const op=pick(g===1?['add','sub']:g===2?['add','sub','mul']:g===3?['add','sub','mul','div']:g===4?['mul','div','two','two']:['two','div','mul','two']);
+  const mx=[[10,15,20],[40,70,100],[200,500,900],[900,2000,5000],[900,2000,5000],[900,2000,5000]][g-1][d];
+  let q,ans,why,hint=L('Decide: do you add, subtract, multiply or divide? Look for clue words.','Decide: ¿sumas, restas, multiplicas o divides? Busca palabras clave.');
+  if(op==='add'){const a=r(2,Math.floor(mx*.6)),b=r(2,mx-a);ans=a+b;why=`${a} + ${b} = ${ans}`;
+    q=L(`${nm} has ${a} ${th}. ${nm2} gives ${nm} ${b} more. How many ${th} does ${nm} have now?`,`${nm} tiene ${a} ${th}. ${nm2} le da ${b} más. ¿${C} ${th} tiene ${nm} ahora?`);}
+  else if(op==='sub'){const a=r(5,mx),b=r(1,a-1);ans=a-b;why=`${a} − ${b} = ${ans}`;
+    q=L(`${nm} has ${a} ${th} and gives ${b} to ${nm2}. How many ${th} does ${nm} have left?`,`${nm} tiene ${a} ${th} y le regala ${b} a ${nm2}. ¿${C} le quedan a ${nm}?`);}
+  else if(op==='mul'){const a=r(2,g<=2?5:9),b=r(2,g<=2?(d===0?5:10):12);ans=a*b;why=`${a} × ${b} = ${ans}`;
+    q=L(`There are ${a} boxes. Each box has ${b} ${th}. How many ${th} are there in all?`,`Hay ${a} cajas. Cada caja tiene ${b} ${th}. ¿${C} ${th} hay en total?`);}
+  else if(op==='div'){const k=r(2,[5,9,10][d]),n=r(2,[10,12,20][d]),tot=k*n;ans=n;why=`${tot} ÷ ${k} = ${n}`;
+    q=L(`${nm} shares ${tot} ${th} equally among ${k} friends. How many ${th} does each friend get?`,`${nm} reparte ${tot} ${th} en partes iguales entre ${k} amigos. ¿${C} ${th} recibe cada amigo?`);}
+  else{const a=r(2,g>=5?12:9),b=r(3,g>=5?25:12),prod=a*b,add=Math.random()<.5,cc=add?r(5,g>=5?90:30):r(1,prod-1);ans=add?prod+cc:prod-cc;why=`${a} × ${b} = ${prod}; ${prod} ${add?'+':'−'} ${cc} = ${ans}`;
+    q=add?L(`${nm} buys ${a} packs with ${b} ${th} in each pack. Then ${nm2} gives ${nm} ${cc} more. How many ${th} does ${nm} have now?`,`${nm} compra ${a} paquetes con ${b} ${th} cada uno. Luego ${nm2} le da ${cc} más. ¿${C} ${th} tiene ${nm} ahora?`)
+      :L(`${nm} buys ${a} packs with ${b} ${th} in each pack. Then ${nm} gives away ${cc}. How many ${th} are left?`,`${nm} compra ${a} paquetes con ${b} ${th} cada uno. Luego regala ${cc}. ¿${C} le quedan?`);}
+  return g===1?numChoice(q,'',ans,0,hint,why):numQ(q,'',ans,false,hint,why);
+}
+const TOPICS=[
+  {id:'count',c:'#e8504f',n:['Numbers & Counting','Números y conteo'],gen:genCount},
+  {id:'add',c:'#ef8a17',n:['Addition','Suma'],gen:genAdd},
+  {id:'sub',c:'#c99700',n:['Subtraction','Resta'],gen:genSub},
+  {id:'mul',c:'#2fa66a',n:['Multiplication','Multiplicación'],gen:genMul},
+  {id:'div',c:'#1d9fb0',n:['Division','División'],gen:genDiv},
+  {id:'frac',c:'#4c8dff',n:['Fractions','Fracciones'],gen:genFrac},
+  {id:'place',c:'#7a5cf5',n:['Place Value','Valor posicional'],gen:genPlace},
+  {id:'time',c:'#c452d8',n:['Telling Time','La hora'],gen:genTime},
+  {id:'money',c:'#3aa845',n:['Money','Dinero'],gen:genMoney},
+  {id:'geo',c:'#e8588a',n:['Shapes & Geometry','Figuras y geometría'],gen:genGeo},
+  {id:'pattern',c:'#f06a3c',n:['Patterns & Puzzles','Patrones y acertijos'],gen:genPattern},
+  {id:'word',c:'#5a6bd8',n:['Word Problems','Problemas con texto'],gen:genWord}];
+function raceQ(g){
+  const mx=[10,20,100,200,500,1000][g-1],ops=g===1?['+','−']:g===2?['+','−','×']:g===3?['×','÷','+','−']:['×','÷','+','−','×'];
+  const op=pick(ops),big=g>=4?12:10;let a,b,ans;
+  if(op==='+'){a=r(1,mx);b=r(1,mx);ans=a+b;}else if(op==='−'){a=r(2,mx);b=r(1,a);ans=a-b;}
+  else if(op==='×'){a=pick(g<=2?[2,5,10]:[2,3,4,5,6,7,8,9,10,11,12]);b=r(2,big);ans=a*b;}
+  else{b=r(2,big);ans=r(2,big);a=b*ans;}
+  return {prompt:`${fmt(a)} ${op} ${fmt(b)}`,answer:fmt(ans),opts:numOpts(ans,0).map(fmt)};
+}
+
+/* ============================================================ feedback: sound, confetti, toast ============ */
+let AC=null;
+function tone(f,t,du,type,vol){const o=AC.createOscillator(),gn=AC.createGain();o.type=type||'sine';o.frequency.value=f;gn.gain.setValueAtTime(vol||.12,AC.currentTime+t);gn.gain.exponentialRampToValueAtTime(.001,AC.currentTime+t+du);o.connect(gn);gn.connect(AC.destination);o.start(AC.currentTime+t);o.stop(AC.currentTime+t+du+.02);}
+function sfx(k){if(!S.sound)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();
+  if(k==='ok'){tone(659,0,.12);tone(880,.1,.18);}else if(k==='no'){tone(240,0,.22,'triangle',.14);}
+  else if(k==='win'){[523,659,784,1047].forEach((f,i)=>tone(f,i*.11,.25));}else if(k==='tick'){tone(900,0,.05,'square',.04);}}catch(e){}}
+const reduced=()=>{try{return window.matchMedia('(prefers-reduced-motion: reduce)').matches;}catch(e){return false;}};
+function confetti(){if(reduced())return;const cv=document.getElementById('confetti');if(!cv||!cv.getContext)return;const x=cv.getContext('2d');cv.width=innerWidth;cv.height=innerHeight;
+  const cols=['#ff7a1a','#5b3df5','#ffbd2e','#2fb49f','#e8588a','#4c8dff'];const ps=Array.from({length:130},()=>({x:Math.random()*cv.width,y:-20-Math.random()*cv.height*.4,vx:(Math.random()-.5)*4,vy:2+Math.random()*4,s:6+Math.random()*7,c:pick(cols),a:Math.random()*6,va:(Math.random()-.5)*.3}));
+  const t0=performance.now();(function f(t){const e=t-t0;x.clearRect(0,0,cv.width,cv.height);ps.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.a+=p.va;x.save();x.translate(p.x,p.y);x.rotate(p.a);x.fillStyle=p.c;x.globalAlpha=Math.max(0,1-e/2400);x.fillRect(-p.s/2,-p.s/3,p.s,p.s*.6);x.restore();});
+    if(e<2400)requestAnimationFrame(f);else x.clearRect(0,0,cv.width,cv.height);})(t0);}
+function toast(msg){const t=document.getElementById('toast');const d=document.createElement('div');d.textContent=msg;t.appendChild(d);setTimeout(()=>{if(d.parentNode)d.parentNode.removeChild(d);},3200);}
+
+/* ============================================================ rewards ============ */
+const totalStars=()=>{let n=0;for(const g in S.p)for(const id in S.p[g])n+=S.p[g][id].s||0;return n;};
+const topicsTried=()=>{const s={};for(const g in S.p)for(const id in S.p[g])if(S.p[g][id].n>0)s[id]=1;return Object.keys(s).length;};
+const hasMaster=()=>{for(const g in S.p)for(const id in S.p[g])if(S.p[g][id].s>=3)return true;return false;};
+const BADGES=[
+  {id:'first',g:'star',c:'#f5a300',n:['First Steps','Primeros pasos'],d:['Finish your first round','Termina tu primera ronda'],ok:()=>S.rounds>=1},
+  {id:'perfect',g:'crown',c:'#e8588a',n:['Perfect Round','Ronda perfecta'],d:['Get all 10 right on the first try','Acierta las 10 a la primera'],ok:(s,x)=>x.perfect},
+  {id:'combo5',g:'bolt',c:'#5b3df5',n:['Lightning Brain','Mente relámpago'],d:['Get 5 in a row on the first try','Acierta 5 seguidas a la primera'],ok:(s,x)=>x.combo>=5},
+  {id:'explorer',g:'medal',c:'#1d9fb0',n:['Explorer','Exploradora'],d:['Try 6 different topics','Prueba 6 temas distintos'],ok:()=>topicsTried()>=6},
+  {id:'stars15',g:'star',c:'#ef8a17',n:['Star Collector','Coleccionista de estrellas'],d:['Collect 15 stars','Reúne 15 estrellas'],ok:()=>totalStars()>=15},
+  {id:'stars40',g:'star',c:'#c452d8',n:['Constellation','Constelación'],d:['Collect 40 stars','Reúne 40 estrellas'],ok:()=>totalStars()>=40},
+  {id:'master',g:'crown',c:'#2fa66a',n:['Topic Master','Maestra de un tema'],d:['Earn 3 stars in one topic','Gana 3 estrellas en un tema'],ok:hasMaster},
+  {id:'streak3',g:'flame',c:'#e8504f',n:['On Fire','En llamas'],d:['Play 3 days in a row','Juega 3 días seguidos'],ok:()=>S.streak>=3},
+  {id:'streak7',g:'flame',c:'#c99700',n:['Super Streak','Súper racha'],d:['Play 7 days in a row','Juega 7 días seguidos'],ok:()=>S.streak>=7},
+  {id:'racer',g:'bolt',c:'#4c8dff',n:['Speed Racer','Corredora veloz'],d:['Score 15 in the Quick Race','Logra 15 en la Carrera Rápida'],ok:()=>S.race>=15},
+  {id:'racer2',g:'heart',c:'#e8588a',n:['Race Champion','Campeona de carrera'],d:['Score 30 in the Quick Race','Logra 30 en la Carrera Rápida'],ok:()=>S.race>=30},
+  {id:'lvl5',g:'medal',c:'#7a5cf5',n:['Level 5','Nivel 5'],d:['Reach level 5','Llega al nivel 5'],ok:()=>levelInfo(S.xp).level>=5}];
+function award(x){const out=[];for(const b of BADGES){if(!S.badges[b.id]&&b.ok(S,x||{})){S.badges[b.id]=1;out.push(b);}}return out;}
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+const yest=()=>{const d=new Date();d.setDate(d.getDate()-1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+const liveStreak=()=>(S.last===today()||S.last===yest())?S.streak:0;
+function bumpDay(){const t=today();if(S.day.d!==t)S.day={d:t,rounds:0,bonus:false};S.day.rounds++;S.rounds++;
+  if(S.last!==t){S.streak=S.last===yest()?S.streak+1:1;S.last=t;}
+  let bonus=false;if(S.day.rounds>=3&&!S.day.bonus){S.day.bonus=true;S.xp+=30;bonus=true;}return bonus;}
+const todayRounds=()=>S.day.d===today()?S.day.rounds:0;
+function stickerSVG(b,on){return `<svg viewBox="0 0 64 64" role="img" aria-label="${esc(L(b.n[0],b.n[1]))}"><circle cx="32" cy="32" r="29" fill="${on?b.c:'var(--line)'}"/><circle cx="32" cy="32" r="24" fill="none" stroke="#fff" stroke-opacity="${on?.7:.3}" stroke-width="2.500" stroke-dasharray="3 4"/><use href="#i-${b.g}" x="16" y="16" width="32" height="32" style="color:${on?'#fff':'var(--muted)'}"/></svg>`;}
+
+/* ============================================================ app ============ */
+let screen='welcome',Q=null,R=null,hintShown=false;
+const $=s=>document.getElementById(s);
+const app=()=>$('app');
+const MSG={en:["Pick an island and let's count!","Every mistake is a clue. Let's go!","Ready to stretch your brain?","Small steps every day make big math muscles!"],es:["¡Elige una isla y empecemos a contar!","Cada error es una pista. ¡Vamos!","¿Lista para estirar el cerebro?","¡Pasos pequeños cada día crean grandes músculos matemáticos!"]};
+function go(name,arg){stopRace();save();screen=name;
+  const fn={welcome:vWelcome,home:vHome,quiz:vQuiz,result:vResult,race:vRace,rresult:vRaceResult,stickers:vStickers,parent:vParent}[name];
+  app().innerHTML=fn(arg);window.scrollTo(0,0);
+  const f=app().querySelector('[data-focus]');if(f&&f.focus)f.focus({preventScroll:true});}
+const topBar=(back)=>`<div class="top"><div class="logo">${back?`<button class="btn alt sm" data-a="home" aria-label="${L('Back','Volver')}">←</button>`:pip('happy',44)}<span>Pip's Math Island</span></div>
+  <div class="chips"><button class="chip" data-a="lang" aria-label="Language">${S.lang==='es'?'ES · EN':'EN · ES'}</button><button class="chip" data-a="sound" aria-pressed="${S.sound}">${S.sound?L('Sound on','Sonido sí'):L('Sound off','Sonido no')}</button></div></div>`;
+
+function vWelcome(){return `<div class="wel"><div class="pip bounce">${pip('cheer',150)}</div><h1>${L("Hi! I'm Pip.","¡Hola! Soy Pip.")}</h1>
+  <p>${L("Let's explore Math Island together. Every topic is a game!","¡Exploremos juntos la Isla Matemática! ¡Cada tema es un juego!")}</p>
+  <div><label for="nm">${L("What's your name?","¿Cómo te llamas?")}</label></div><input id="nm" maxlength="16" autocomplete="off" value="${esc(S.name)}" data-focus>
+  <div><label>${L('Which grade are you in?','¿En qué grado estás?')}</label><div class="chips" style="justify-content:center;margin-top:8px">${[1,2,3,4,5,6].map(g=>`<button class="chip" data-a="grade" data-g="${g}" aria-pressed="${S.grade===g}">${g}</button>`).join('')}</div></div>
+  <div><label>${L('Language','Idioma')}</label><div class="chips" style="justify-content:center;margin-top:8px"><button class="chip" data-a="setlang" data-l="en" aria-pressed="${S.lang==='en'}">English</button><button class="chip" data-a="setlang" data-l="es" aria-pressed="${S.lang==='es'}">Español</button></div></div>
+  <button class="btn big" data-a="begin" style="max-width:340px">${L("Let's go!","¡Vamos!")}</button></div>`;}
+function vHome(){const li=levelInfo(S.xp),tr=todayRounds(),name=esc(S.name||L('friend','amigo'));
+  const cards=TOPICS.map(t=>{const p=prog(t.id);return `<button class="island" data-a="play" data-id="${t.id}" style="--c:${t.c}"><span class="tile">${icon(t.id)}</span><h3>${L(t.n[0],t.n[1])}</h3>${starsRow(p.s,3)}<span class="tier">${L('Level','Nivel')} ${p.t+1}/3</span></button>`;}).join('');
+  return `${topBar(false)}
+  <div class="hero"><div class="pipbox bounce">${pip('happy',110)}</div><div class="bubble"><b>${L('Hi','Hola')}, ${name}!</b> ${pick(MSG[S.lang])}</div></div>
+  <div class="chips" style="margin-bottom:14px"><span class="chip">${L('Grade','Grado')}</span>${[1,2,3,4,5,6].map(g=>`<button class="chip" data-a="grade" data-g="${g}" aria-pressed="${S.grade===g}" aria-label="${L('Grade','Grado')} ${g}">${g}</button>`).join('')}</div>
+  <div class="stats">
+    <div class="stat"><small>${L('Level','Nivel')} ${li.level}</small><b>${fmt(S.xp)} XP</b><div class="meter" role="img" aria-label="${Math.round(li.pct)}%"><i style="width:${li.pct}%"></i></div></div>
+    <div class="stat"><small>${L('Stars','Estrellas')}</small><b>${totalStars()} ★</b></div>
+    <div class="stat"><small>${L('Day streak','Racha de días')}</small><b>${liveStreak()} <svg width="22" height="22" style="color:var(--accent);vertical-align:-3px"><use href="#i-flame"/></svg></b></div>
+    <div class="stat"><small>${L('Today: 3 rounds = +30 XP','Hoy: 3 rondas = +30 XP')}</small><b>${Math.min(tr,3)}/3</b><div class="meter"><i style="width:${Math.min(tr,3)/3*100}%"></i></div></div></div>
+  <h2 class="sec">${L('Choose an island','Elige una isla')}</h2>
+  <div class="grid">${cards}
+    <button class="island wide" data-a="race" style="--c:#5b3df5"><span class="tile">${icon('count').replace('<circle','<path d="M13 3L5 17h7l-2 12 11-16h-7z" fill="currentColor"/><circle')}</span><span><h3>${L('Quick Race','Carrera rápida')}</h3><span class="tier">${L('60 seconds. How many can you solve?','60 segundos. ¿Cuántas puedes resolver?')} ${L('Best','Récord')}: ${S.race}</span></span></button></div>
+  <div class="foot"><button class="btn alt" data-a="stickers">${L('My stickers','Mis stickers')} (${Object.keys(S.badges).length}/${BADGES.length})</button><button class="btn alt" data-a="parent">${L('Grown-ups corner','Rincón de adultos')}</button></div>`;}
+
+/* ---- quiz ---- */
+function startRound(id){const t=TOPICS.find(x=>x.id===id),pr=prog(id),qs=[],seen={};
+  for(let i=0;i<10;i++){let q,tries=0;do{q=t.gen(S.grade,i<3?Math.max(0,pr.t-1):pr.t);tries++;}while(seen[q.prompt+q.vis]&&tries<8);seen[q.prompt+q.vis]=1;q.topic=id;qs.push(q);}
+  Q={id,t,qs,i:0,tries:0,first:0,second:0,res:[],missed:[],streak:0,best:0,locked:false,input:'',xp:0,lvl0:levelInfo(S.xp).level};hintShown=false;go('quiz');}
+const KEYS=['1','2','3','4','5','6','7','8','9','.','0','del'];
+function vQuiz(){const q=Q.qs[Q.i];
+  const dots=Q.qs.map((_,i)=>{const x=Q.res[i];return `<i class="dot ${i===Q.i?'cur':x===2?'g':x===1?'y':x===0?'b':''}"></i>`;}).join('');
+  const ans=q.kind==='choice'?`<div class="opts">${q.opts.map((o,i)=>`<button class="opt" data-a="pick" data-i="${i}"><kbd>${i+1}</kbd>${o}</button>`).join('')}</div>`:
+    `<div class="disp" id="disp" aria-live="polite">${Q.input?esc(Q.input):'<span class="ph">?</span>'}</div><div class="keys">${KEYS.map(k=>`<button class="key" data-a="k" data-v="${k}" ${k==='.'&&!q.dec?'disabled':''} aria-label="${k==='del'?L('Delete','Borrar'):k}">${k==='del'?'⌫':k==='.'?(S.lang==='es'?',':'.'):k}</button>`).join('')}</div><button class="btn big" data-a="check">${L('Check','Comprobar')}</button>`;
+  return `<div class="quiz"><div class="qtop"><button class="btn alt sm" data-a="home" aria-label="${L('Back','Volver')}">←</button><div class="dots" role="img" aria-label="${Q.i+1}/10">${dots}</div><span class="chip">${icon(Q.id).replace('<svg','<svg style="color:'+Q.t.c+'"')}${Q.i+1}/10</span></div>
+  <div class="stage"><div id="pipbox">${pip('happy',84)}</div><div class="bubble" id="bub">${pick(S.lang==='es'?['¡Tú puedes!','Piénsalo con calma.','¡Vamos, campeona!']:["You've got this!","Take your time.","Let's go, champ!"])}</div></div>
+  <section class="qcard"><h2 class="prompt">${q.prompt}</h2>${q.vis?`<div class="vis">${q.vis}</div>`:''}<div id="ans">${ans}</div>
+  <div class="tools"><button class="btn alt sm" data-a="hint" id="hintBtn">${L('Hint','Pista')}</button></div></section><div id="fb" aria-live="polite"></div></div>`;}
+function setPip(mood,msg){$('pipbox').innerHTML=pip(mood,84);if(msg)$('bub').textContent=msg;}
+function showFb(kind,html,next){$('fb').innerHTML=`<div class="fb ${kind}">${html}${next?`<button class="btn" data-a="next" id="nextBtn" data-focus>${Q.i===9?L('Finish','Terminar'):L('Next','Siguiente')}</button>`:''}</div>`;
+  const nb=$('nextBtn');if(nb&&nb.focus)nb.focus({preventScroll:false});}
+function submit(val){if(!Q||Q.locked)return;const q=Q.qs[Q.i];if(q.kind==='num'&&String(val).trim()==='')return;
+  Q.tries++;const ok=check(q,val);
+  if(ok){Q.locked=true;const first=Q.tries===1;
+    if(first){Q.first++;Q.streak++;Q.best=Math.max(Q.best,Q.streak);Q.res[Q.i]=2;}else{Q.second++;Q.streak=0;Q.res[Q.i]=1;}
+    const gain=first?10+Math.min(Q.streak,5):5;S.xp+=gain;Q.xp+=gain;
+    sfx('ok');setPip('cheer',first?pick(L2(['Awesome!','Perfect!','Brilliant!','You rock!'],['¡Genial!','¡Perfecto!','¡Brillante!','¡Eres una crack!'])):L('You got it!','¡Lo lograste!'));
+    markAnswer(q,val,true);
+    showFb('good',`<strong>${first?L('Correct!','¡Correcto!'):L('You figured it out!','¡Lo descubriste!')} +${gain} XP</strong>`+(first?'':`<p>${q.why}</p>`),true);
+  }else{Q.streak=0;sfx('no');
+    if(Q.tries===1){setPip('think',L('Not yet. Look at the hint and try again!','Todavía no. ¡Mira la pista e inténtalo otra vez!'));markAnswer(q,val,false);hintShown=true;
+      showFb('tip',`<strong>${L('Almost! Try once more.','¡Casi! Inténtalo otra vez.')}</strong><p>${q.hint}</p>`,false);}
+    else{Q.locked=true;Q.res[Q.i]=0;Q.missed.push(q);setPip('sad',L("That one was tricky. Let's learn it!","Esa estuvo difícil. ¡Vamos a aprenderla!"));markAnswer(q,val,false);revealAnswer(q);
+      showFb('bad',`<strong>${L('The answer is','La respuesta es')} ${q.kind==='choice'?q.answer:fmt(q.answer)}</strong><p>${q.why}</p>`,true);}}}
+function L2(en,es){return S.lang==='es'?es:en;}
+function markAnswer(q,val,ok){
+  if(q.kind==='choice'){const bs=app().querySelectorAll('.opt');bs.forEach((b,i)=>{if(q.opts[i]===val){b.classList.add(ok?'ok':'no');b.disabled=true;}});}
+  else{const d=$('disp');if(d){d.classList.add(ok?'ok':'no');if(!ok){d.classList.add('shake');Q.input='';setTimeout(()=>{const dd=$('disp');if(dd){dd.classList.remove('no','shake');dd.innerHTML='<span class="ph">?</span>';}},650);}}}
+  if(Q.locked){app().querySelectorAll('.opt,.key,[data-a="check"],#hintBtn').forEach(b=>b.disabled=true);}}
+function revealAnswer(q){if(q.kind==='choice'){app().querySelectorAll('.opt').forEach((b,i)=>{if(q.opts[i]===q.answer)b.classList.add('ok');});}else{const d=$('disp');if(d){d.classList.remove('no','shake');d.classList.add('ok');d.textContent=fmt(q.answer);}}}
+function nextQ(){if(!Q||!Q.locked)return;if(Q.i>=9){finishRound();return;}Q.i++;Q.tries=0;Q.locked=false;Q.input='';hintShown=false;app().innerHTML=vQuiz();}
+function finishRound(){const first=Q.first,sec=Q.second,score=first+sec*.5,stars=score>=9?3:score>=7?2:score>=5?1:0,pr=prog(Q.id),t0=pr.t;
+  pr.n+=10;pr.ok+=first+sec;pr.s=Math.max(pr.s,stars);if(first>=9&&pr.t<2)pr.t++;else if(first<=4&&pr.t>0)pr.t--;
+  const bonus=bumpDay(),nb=award({perfect:first===10,combo:Q.best});
+  Q.result={stars,t0,t1:pr.t,bonus,nb,lvlUp:levelInfo(S.xp).level>Q.lvl0};save();sfx(stars>0?'win':'no');if(stars>=2)setTimeout(confetti,200);go('result');}
+function vResult(){const x=Q.result,li=levelInfo(S.xp);
+  const msg=x.stars===3?L('Amazing work!','¡Trabajo increíble!'):x.stars===2?L('Great job!','¡Muy bien!'):x.stars===1?L('Nice try! Practice makes progress.','¡Buen intento! Practicando se avanza.'):L("Let's try again. You'll get better each time!","¡Intentemos otra vez! ¡Mejorarás cada vez!");
+  const tier=x.t1>x.t0?`<div class="chip" style="color:var(--good)">${L('Level up! This island is now level','¡Subiste! Esta isla ahora es nivel')} ${x.t1+1}</div>`:x.t1<x.t0?`<div class="chip">${L('Next round will be a little easier.','La próxima ronda será un poco más fácil.')}</div>`:'';
+  const review=Q.missed.length?`<h2 class="sec" style="margin-top:20px">${L("Let's review","Repasemos")}</h2><div class="list">${Q.missed.map(q=>`<div class="it"><span class="eqs">${q.prompt}</span><span>→ <b>${q.kind==='choice'?q.answer:fmt(q.answer)}</b></span><small style="flex-basis:100%;color:var(--muted)">${q.why}</small></div>`).join('')}</div>`:'';
+  return `<div class="quiz center">${pip(x.stars>1?'cheer':x.stars?'happy':'think',130)}<h1>${msg}</h1>
+  <div class="bigstars" role="img" aria-label="${x.stars}/3">${[0,1,2].map(i=>`<svg class="${i<x.stars?'pop':'off'}" style="animation-delay:${i*.25}s"><use href="#i-star"/></svg>`).join('')}</div>
+  <p><b>${Q.first}</b> ${L('right on the first try','bien a la primera')} · <b>${Q.second}</b> ${L('on the second','a la segunda')} · +${Q.xp+(x.bonus?30:0)} XP</p>
+  <div class="row" style="justify-content:center">${tier}${x.lvlUp?`<div class="chip" style="color:var(--violet)">${L('Player level','Nivel de jugador')} ${li.level}!</div>`:''}${x.bonus?`<div class="chip" style="color:var(--good)">${L('Daily goal done! +30 XP','¡Meta diaria cumplida! +30 XP')}</div>`:''}</div>
+  ${x.nb.length?`<h2 class="sec" style="margin-top:18px">${L('New stickers!','¡Stickers nuevos!')}</h2><div class="row" style="justify-content:center">${x.nb.map(b=>`<div class="pop" style="width:96px">${stickerSVG(b,true)}<small>${L(b.n[0],b.n[1])}</small></div>`).join('')}</div>`:''}
+  ${review}<div class="row" style="justify-content:center;margin-top:20px"><button class="btn" data-a="play" data-id="${Q.id}" data-focus>${L('Play again','Jugar otra vez')}</button><button class="btn alt" data-a="home">${L('Home','Inicio')}</button></div></div>`;}
+
+/* ---- quick race ---- */
+function startRace(){R={score:0,combo:0,best:0,end:Date.now()+60000,q:raceQ(S.grade),lock:false,iv:null};go('race');
+  R.iv=setInterval(()=>{const left=Math.max(0,R.end-Date.now()),bar=document.querySelector('.timer i'),tl=$('tleft');if(bar)bar.style.transform=`scaleX(${left/60000})`;if(tl)tl.textContent=Math.ceil(left/1000);if(left<=0)endRace();},150);}
+function stopRace(){if(R&&R.iv){clearInterval(R.iv);R.iv=null;}}
+function raceBody(){const q=R.q;return `<div class="rq">${q.prompt} = ?</div><div class="opts">${q.opts.map((o,i)=>`<button class="opt" data-a="rpick" data-i="${i}"><kbd>${i+1}</kbd>${o}</button>`).join('')}</div>`;}
+function vRace(){return `<div class="quiz"><div class="qtop"><button class="btn alt sm" data-a="home" aria-label="${L('Back','Volver')}">←</button><div class="timer"><i></i></div><span class="chip"><span id="tleft">60</span>s</span></div>
+  <div class="row" style="justify-content:center;margin-bottom:6px"><span class="chip">${L('Score','Puntos')}: <b id="rs">0</b></span><span class="chip">${L('Combo','Combo')}: <b id="rc">0</b></span></div>
+  <section class="qcard" id="rbox">${raceBody()}</section></div>`;}
+function racePick(i){if(!R||R.lock)return;const q=R.q,ok=q.opts[i]===q.answer,btns=app().querySelectorAll('.opt');
+  if(ok){R.score++;R.combo++;R.best=Math.max(R.best,R.combo);sfx('tick');R.q=raceQ(S.grade);$('rs').textContent=R.score;$('rc').textContent=R.combo;$('rbox').innerHTML=raceBody();}
+  else{R.combo=0;sfx('no');R.lock=true;btns[i].classList.add('no');btns.forEach((b,j)=>{if(q.opts[j]===q.answer)b.classList.add('ok');});$('rc').textContent=0;
+    setTimeout(()=>{if(!R)return;R.lock=false;R.q=raceQ(S.grade);const bx=$('rbox');if(bx&&screen==='race')bx.innerHTML=raceBody();},550);}}
+function endRace(){stopRace();const rec=R.score>S.race;S.race=Math.max(S.race,R.score);S.xp+=R.score*2;const nb=award({combo:0});R.rec=rec;R.nb=nb;save();sfx('win');if(rec||R.score>=10)setTimeout(confetti,200);go('rresult');}
+function vRaceResult(){return `<div class="quiz center">${pip(R.score>=10?'cheer':'happy',130)}<h1>${R.rec&&R.score>0?L('New record!','¡Nuevo récord!'):L("Time's up!",'¡Se acabó el tiempo!')}</h1>
+  <p style="font:700 3.4rem var(--font-d);margin:6px 0">${R.score}</p><p>${L('answers right','respuestas correctas')} · ${L('Best combo','Mejor combo')}: ${R.best} · ${L('Record','Récord')}: ${S.race} · +${R.score*2} XP</p>
+  ${R.nb.length?`<div class="row" style="justify-content:center">${R.nb.map(b=>`<div class="pop" style="width:96px">${stickerSVG(b,true)}<small>${L(b.n[0],b.n[1])}</small></div>`).join('')}</div>`:''}
+  <div class="row" style="justify-content:center;margin-top:20px"><button class="btn" data-a="race" data-focus>${L('Race again','Correr otra vez')}</button><button class="btn alt" data-a="home">${L('Home','Inicio')}</button></div></div>`;}
+
+/* ---- stickers & grown-ups ---- */
+function vStickers(){return `${topBar(true)}<h2 class="sec">${L('My stickers','Mis stickers')} (${Object.keys(S.badges).length}/${BADGES.length})</h2><div class="stk">${BADGES.map(b=>{const on=!!S.badges[b.id];
+  return `<div class="s ${on?'':'lock'}">${stickerSVG(b,on)}<b>${L(b.n[0],b.n[1])}</b><small>${L(b.d[0],b.d[1])}</small></div>`;}).join('')}</div>`;}
+let confirmReset=false;
+function vParent(){const rows=TOPICS.map(t=>{const p=prog(t.id),acc=p.n?Math.round(100*p.ok/p.n):null;return `<tr><td>${L(t.n[0],t.n[1])}</td><td>${p.n}</td><td>${acc===null?'—':acc+'%'}</td><td>${starsRow(p.s,3)}</td><td>${p.t+1}/3</td></tr>`;}).join('');
+  return `${topBar(true)}<h2 class="sec">${L('Grown-ups corner','Rincón de adultos')}</h2>
+  <div class="card"><p style="margin-top:0">${L(`Progress for ${esc(S.name)}, grade ${S.grade}. Questions adapt: after a round with 9 or more first-try answers the topic moves up a level; with 4 or fewer it eases down. Wrong answers always get a hint first, then an explanation.`,
+    `Progreso de ${esc(S.name)}, grado ${S.grade}. Las preguntas se adaptan: con 9 o más aciertos a la primera el tema sube de nivel; con 4 o menos baja. Cada error recibe primero una pista y luego una explicación.`)}</p>
+  <div class="tw"><table><thead><tr><th>${L('Topic','Tema')}</th><th>${L('Questions','Preguntas')}</th><th>${L('Accuracy','Aciertos')}</th><th>${L('Stars','Estrellas')}</th><th>${L('Difficulty','Dificultad')}</th></tr></thead><tbody>${rows}</tbody></table></div></div>
+  <div class="row" style="margin-top:16px"><button class="btn alt" data-a="profile">${L('Change name, grade or language','Cambiar nombre, grado o idioma')}</button>
+  <button class="btn alt" data-a="reset">${confirmReset?L('Tap again to erase everything','Toca otra vez para borrar todo'):L('Reset all progress','Borrar todo el progreso')}</button></div>
+  <p style="color:var(--muted)">${L('Progress is saved only in this browser. Nothing is sent anywhere.','El progreso se guarda solo en este navegador. No se envía nada a ningún sitio.')}</p>`;}
+
+/* ============================================================ events ============ */
+const ACT={
+  begin(){const n=$('nm');S.name=(n&&n.value.trim())||L('Friend','Amigo');S.started=true;go('home');},
+  grade(d){const n=$('nm');if(n)S.name=n.value;S.grade=+d.g;save();go(screen);},
+  setlang(d){const n=$('nm');if(n)S.name=n.value;S.lang=d.l;go('welcome');},
+  lang(){S.lang=S.lang==='es'?'en':'es';go(screen);},
+  sound(){S.sound=!S.sound;if(S.sound)sfx('ok');go(screen);},
+  home(){confirmReset=false;go('home');},
+  play(d){startRound(d.id);},
+  pick(d){const q=Q&&Q.qs[Q.i];if(q)submit(q.opts[+d.i]);},
+  k(d){if(!Q||Q.locked)return;const q=Q.qs[Q.i];if(q.kind!=='num')return;
+    if(d.v==='del')Q.input=Q.input.slice(0,-1);else if(d.v==='.'){if(q.dec&&Q.input.indexOf('.')<0)Q.input+=Q.input?'.':'0.';}else if(Q.input.length<9)Q.input+=d.v;
+    const e=$('disp');if(e){e.classList.remove('no','shake');e.textContent=Q.input?Q.input.replace('.',S.lang==='es'?',':'.'):'';if(!Q.input)e.innerHTML='<span class="ph">?</span>';}},
+  check(){if(Q)submit(Q.input);},
+  next(){nextQ();},
+  hint(){if(!Q||Q.locked)return;const q=Q.qs[Q.i];setPip('think',L('Here is a little help.','Aquí tienes una ayuda.'));showFb('tip',`<strong>${L('Hint','Pista')}</strong><p>${q.hint}</p>`,false);},
+  race(){startRace();},
+  rpick(d){racePick(+d.i);},
+  stickers(){go('stickers');},
+  parent(){confirmReset=false;go('parent');},
+  profile(){go('welcome');},
+  reset(){if(!confirmReset){confirmReset=true;go('parent');return;}confirmReset=false;const lang=S.lang;Object.assign(S,defaults(),{lang});S.started=false;save();go('welcome');}
+};
+function onKey(e){if(e.ctrlKey||e.metaKey||e.altKey)return;const tg=e.target;if(tg&&tg.tagName==='INPUT')return;
+  if(screen==='quiz'&&Q){const q=Q.qs[Q.i];
+    if(e.key==='Enter'){e.preventDefault();if(Q.locked)nextQ();else if(q.kind==='num')submit(Q.input);return;}
+    if(Q.locked)return;
+    if(q.kind==='num'){if(/^[0-9]$/.test(e.key))ACT.k({v:e.key});else if(e.key==='.'||e.key===',')ACT.k({v:'.'});else if(e.key==='Backspace'){e.preventDefault();ACT.k({v:'del'});}}
+    else if(/^[1-4]$/.test(e.key)&&q.opts[+e.key-1]!==undefined)submit(q.opts[+e.key-1]);}
+  else if(screen==='race'&&R&&/^[1-4]$/.test(e.key))racePick(+e.key-1);}
+function init(){load();
+  document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-a]');if(!b||b.disabled)return;const f=ACT[b.dataset.a];if(f)f(b.dataset,b);});
+  document.addEventListener('keydown',onKey);
+  if(S.started)go('home');else go('welcome');}
+
+if(window.__PIP_TEST){window.__pip={S,TOPICS,raceQ,check,levelInfo,BADGES,award};return;}
+init();
+})();
+</script>
