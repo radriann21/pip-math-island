@@ -7,6 +7,8 @@ interface PipProps {
   size?: number;
   /** Accessible name; defaults to the translated mascot name. */
   label?: string;
+  /** Hide from assistive technology when the mascot is only ornament next to real text. */
+  decorative?: boolean;
 }
 
 const EYES: Record<PipMood, JSX.Element> = {
@@ -49,10 +51,13 @@ const MOUTH: Record<PipMood, JSX.Element> = {
 };
 
 /** The fox mascot. Inline SVG ported from the prototype; the mood changes the eyes and mouth. */
-export function Pip({ mood = 'happy', size = 110, label }: PipProps) {
+export function Pip({ mood = 'happy', size = 110, label, decorative = false }: PipProps) {
   const { t } = useI18n();
+  const a11y = decorative
+    ? { 'aria-hidden': true as const }
+    : { role: 'img' as const, 'aria-label': label ?? t('common.pip') };
   return (
-    <svg viewBox="0 0 120 120" width={size} height={size} role="img" aria-label={label ?? t('common.pip')}>
+    <svg viewBox="0 0 120 120" width={size} height={size} {...a11y}>
       <path d="M22 44L30 8l28 20z" fill="#ff8a2a" />
       <path d="M98 44L90 8 62 28z" fill="#ff8a2a" />
       <path d="M30 36l4-16 12 10z" fill="#ffc9a0" />

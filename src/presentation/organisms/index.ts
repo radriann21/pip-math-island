@@ -1,4 +1,15 @@
+export { AuthForm, PASSWORD_MIN, validateCredentials } from './AuthForm';
+export type { AuthMode, CredentialErrors, Credentials } from './AuthForm';
+export { CHILD_NAME_MAX, ChildForm, validateChildName } from './ChildForm';
+export type { ChildFormValues } from './ChildForm';
+export { ChildPicker } from './ChildPicker';
+export type { ChildProfileView } from './ChildPicker';
 export { HomeView } from './HomeView';
+export { ParentGate } from './ParentGate';
+export { checkGateAnswer, makeGateChallenge } from './parentGate';
+export type { GateChallenge } from './parentGate';
+export { ParentReportView } from './ParentReportView';
+export type { ParentReportViewProps, ReportRowView, WeakTopicView } from './ParentReportView';
 export { QuizView } from './QuizView';
 export type { QuizFeedbackView, QuizQuestionView, QuizViewProps } from './QuizView';
 export { RaceResultView } from './RaceResultView';

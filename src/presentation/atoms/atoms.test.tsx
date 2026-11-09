@@ -35,6 +35,11 @@ describe('Pip', () => {
     expect(screen.getByRole('img', { name: 'Fox mascot' })).toBeInTheDocument();
   });
 
+  it('can be decorative, hidden from assistive technology', () => {
+    render(<Pip decorative />);
+    expect(screen.queryByRole('img', { name: 'Pip' })).toBeNull();
+  });
+
   it('draws a different face for each mood', () => {
     const faces = (['happy', 'cheer', 'think', 'sad'] as const).map((mood) => {
       const { container, unmount } = render(<Pip mood={mood} />);
