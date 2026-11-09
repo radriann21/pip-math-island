@@ -28,8 +28,8 @@ the Supabase project `educative-project` (migrations via MCP). No other remote d
 - [x] T5 Application: ports, use cases, in-memory fakes, use-case tests — route: delegated writer
 - [x] T6 Infrastructure: Supabase adapters (auth, children, progress via RPC), local guest adapters, clock, composition root; adapter tests with mocked client — route: delegated writer
 - [x] T7 Presentation foundation: tokens/base CSS port, i18n (en/es), atoms+molecules (Pip, stars, buttons, keypad, option grid, visuals), RTL tests — route: delegated writer
-- [ ] T8 Presentation pages: Auth, Child picker, Home, Quiz, Result, Race, Stickers, Parent dashboard (math gate), router — route: delegated writer
-- [ ] T9 Integration & verification: typecheck, lint, tests, build, advisors, README, live smoke against Supabase — route: inline
+- [x] T8 Presentation pages: Auth, Child picker, Home, Quiz, Result, Race, Stickers, Parent dashboard (math gate), router — route: delegated writer
+- [x] T9 Integration & verification (reduced by user: no README, no TDD): typecheck, lint, tests, build, advisors, README, live smoke against Supabase — route: inline
 
 ## Acceptance criteria
 - `pnpm typecheck && pnpm lint && pnpm test && pnpm build` all pass.
@@ -69,5 +69,16 @@ TDD: enabled (source: session instructions) · runner: `pnpm test` (Vitest) · R
 - T7 done (worktree branch merged; commits eb05ac9 4c85964 0d4a2aa 07f3258 5c889e4 af95a85 7c5200e): tokens/base/visuals CSS, i18n en/es with key-parity test, 10 atoms, 13 molecules, 14 organisms (view-model props, no application imports), domain-markup↔Sprite cross-check test. CSS not yet imported by main.tsx and NOT visually verified in a browser.
 - T7 spot check by orchestrator on merged tree: typecheck pass, lint pass, 935/935 tests pass, build pass.
 
+- User decision (explicit, after T7): TDD is OFF for the remaining work (T8, T9) and no README is to be written. Source: user message. T8 is built without tests-first; T9 reduces to typecheck/lint/test/build + Supabase advisors.
+
+- T8 done in two parallel writers (commits eeeeffb 5309fa9 988d0e5 4adbfd6 924a7ad): providers (mode/session/child/locale), BrowserRouter with guards and lazy pages, auth/children/home/quiz/result/stickers, race and parent (gate, report, edit/delete child, sign out). Written without TDD per user decision.
+- T9 (orchestrator): typecheck pass, lint pass, 984/984 tests pass, build pass (main 374 kB / 107 kB gzip). Dev server returned HTTP 200 and a headless Firefox screenshot showed the login page rendering correctly (Pip, graph-paper theme, sign in/create account/play as guest). Supabase advisors not re-run: no DB changes since T2 (clean).
+
+## Known gaps
+- No tests for quiz round, save-retry, race, parent gate, StrictMode double-save, home/stickers pages.
+- Interactive flows (quiz, race, parent) never clicked through in a browser; CSS only visually checked on the login screen.
+- Cloud sign-up not exercised against the real project (avoids sending confirmation emails to fake addresses); email-confirmation toggle is dashboard-only.
+- No README (user request); no git remote, so no PRs.
+
 ## Next step
-T8.
+User runs `pnpm dev` and walks through the flows.
