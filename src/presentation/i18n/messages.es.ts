@@ -104,7 +104,6 @@ export const messagesEs: Messages = {
   'result.daily': '¡Meta diaria cumplida! +{bonus} XP',
   'result.newStickers': '¡Stickers nuevos!',
   'result.review': 'Repasemos',
-  'result.answerArrow': '→ {answer}',
   'result.again': 'Jugar otra vez',
 
   // race

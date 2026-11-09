@@ -106,7 +106,6 @@ export const messagesEn = {
   'result.daily': 'Daily goal done! +{bonus} XP',
   'result.newStickers': 'New stickers!',
   'result.review': "Let's review",
-  'result.answerArrow': '→ {answer}',
   'result.again': 'Play again',
 
   // race
