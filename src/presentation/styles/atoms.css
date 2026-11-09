@@ -1,0 +1,168 @@
+/* Atoms: button, chip, card, meter, stars, text field. */
+
+/* buttons */
+.pip-btn {
+  font: 600 1.15rem var(--font-d);
+  padding: 0.7rem 1.4rem;
+  border-radius: 16px;
+  border: 0;
+  background: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: 0 5px 0 color-mix(in oklab, var(--accent) 55%, #000);
+  transition:
+    transform 0.08s,
+    box-shadow 0.08s;
+}
+.pip-btn:active:not(:disabled) {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 color-mix(in oklab, var(--accent) 55%, #000);
+}
+.pip-btn--alt {
+  background: var(--card);
+  color: var(--ink);
+  border: 2px solid var(--line);
+  box-shadow: 0 5px 0 var(--line);
+}
+.pip-btn--alt:active:not(:disabled) {
+  box-shadow: 0 1px 0 var(--line);
+}
+.pip-btn--sm {
+  padding: 0.4rem 0.9rem;
+  font-size: 1rem;
+  border-radius: 12px;
+  box-shadow: 0 3px 0 var(--line);
+}
+.pip-btn--big {
+  width: 100%;
+  font-size: 1.35rem;
+  padding: 0.9rem;
+}
+.pip-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* layout helpers */
+.pip-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.pip-row--center {
+  justify-content: center;
+}
+.pip-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* chips */
+.pip-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--card);
+  color: var(--ink);
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 14px;
+  font: 600 1rem var(--font-d);
+}
+.pip-chip svg {
+  width: 20px;
+  height: 20px;
+}
+.pip-chip--good {
+  color: var(--good);
+}
+.pip-chip--violet {
+  color: var(--violet);
+}
+button.pip-chip[aria-pressed='true'] {
+  background: var(--violet);
+  border-color: var(--violet);
+  color: var(--on-violet);
+}
+
+/* card */
+.pip-card {
+  background: var(--card);
+  border: 2px solid var(--line);
+  border-radius: 22px;
+  padding: 16px 18px;
+}
+
+/* meter */
+.pip-meter {
+  height: 12px;
+  border-radius: 99px;
+  background: var(--line);
+  overflow: hidden;
+  margin-top: 6px;
+}
+.pip-meter i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--gold));
+  border-radius: 99px;
+  transition: width 0.6s;
+}
+
+/* stars */
+.pip-stars {
+  display: flex;
+  gap: 2px;
+  color: var(--gold);
+}
+.pip-stars__star {
+  width: 20px;
+  height: 20px;
+}
+.pip-stars__star--off {
+  color: var(--line);
+}
+.pip-stars--lg {
+  justify-content: center;
+  gap: 6px;
+  margin: 6px 0 12px;
+}
+.pip-stars--lg .pip-stars__star {
+  width: 64px;
+  height: 64px;
+}
+
+/* text field */
+.pip-field {
+  display: grid;
+  gap: 6px;
+  text-align: left;
+}
+.pip-field__label {
+  font: 700 1rem var(--font-d);
+  color: var(--muted);
+}
+.pip-field__input {
+  font: 600 1.2rem var(--font-d);
+  padding: 12px 16px;
+  border-radius: 16px;
+  border: 3px solid var(--line);
+  background: var(--card);
+  color: var(--ink);
+  width: 100%;
+}
+.pip-field__input[aria-invalid='true'] {
+  border-color: var(--bad);
+}
+.pip-field__hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.pip-field__error {
+  margin: 0;
+  color: var(--bad);
+  font-weight: 800;
+  font-size: 0.95rem;
+}

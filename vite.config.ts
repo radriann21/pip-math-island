@@ -1,0 +1,20 @@
+/// <reference types="vitest/config" />
+import { fileURLToPath } from 'node:url';
+import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite';
+
+export default defineConfig({
+  plugins: [react()],
+  resolve: {
+    alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
+  },
+  test: {
+    environment: 'jsdom',
+    globals: false,
+    // Exhaustive property tests in domain/exercises can exceed 5s when files run in parallel.
+    testTimeout: 30_000,
+    setupFiles: ['src/test/setup.ts'],
+    include: ['src/**/*.test.{ts,tsx}'],
+    exclude: ['node_modules', 'dist', 'prototype/**'],
+  },
+});

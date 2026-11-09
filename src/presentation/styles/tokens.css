@@ -1,0 +1,66 @@
+/* Design tokens ported from the prototype. Light is the default; dark follows the OS
+   unless the user forces a theme with data-theme="light" | "dark" on <html>. */
+:root {
+  --bg: #f2f6ff;
+  --grid: #e1e9fa;
+  --card: #ffffff;
+  --ink: #1a2140;
+  --muted: #58628a;
+  --line: #d5def3;
+  --accent: #ff7a1a;
+  --accent-ink: #1d1208;
+  --violet: #5b3df5;
+  --gold: #ffbd2e;
+  --good: #12935f;
+  --good-bg: #dcf6ea;
+  --bad: #d6333a;
+  --bad-bg: #ffe4e5;
+  --warn-bg: #fff2d1;
+  --warn: #8a5a00;
+  --on-violet: #ffffff;
+  --font-d: 'Fredoka', ui-rounded, 'Trebuchet MS', system-ui, sans-serif;
+  --font-b: 'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #10172b;
+    --grid: #172039;
+    --card: #1a2342;
+    --ink: #eef2ff;
+    --muted: #a6b0d4;
+    --line: #2c3862;
+    --accent: #ff9440;
+    --violet: #a28dff;
+    --gold: #ffcf5c;
+    --good: #3ed598;
+    --good-bg: #12382c;
+    --bad: #ff7a80;
+    --bad-bg: #43191d;
+    --warn-bg: #40320f;
+    --warn: #ffd36b;
+    --on-violet: #12112b;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --bg: #10172b;
+  --grid: #172039;
+  --card: #1a2342;
+  --ink: #eef2ff;
+  --muted: #a6b0d4;
+  --line: #2c3862;
+  --accent: #ff9440;
+  --violet: #a28dff;
+  --gold: #ffcf5c;
+  --good: #3ed598;
+  --good-bg: #12382c;
+  --bad: #ff7a80;
+  --bad-bg: #43191d;
+  --warn-bg: #40320f;
+  --warn: #ffd36b;
+  --on-violet: #12112b;
+  color-scheme: dark;
+}
