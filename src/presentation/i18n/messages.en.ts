@@ -211,6 +211,7 @@ export const messagesEn = {
   'error.boundary.title': 'Something went wrong',
   'error.boundary.body': 'Pip got a little lost. Reloading the page usually fixes it.',
   'error.reload': 'Reload the page',
+  'quiz.saveFailed': "We couldn't save your progress. Check your connection and try again.",
   'error.auth.invalid_credentials': 'That email and password do not match.',
   'error.auth.email_not_confirmed': 'Please confirm your email first. Check your inbox.',
   'error.auth.email_taken': 'An account with this email already exists. Try signing in.',

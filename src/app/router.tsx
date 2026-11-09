@@ -1,7 +1,7 @@
 import { Suspense, lazy } from 'react';
-import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { StatePanel } from '@/presentation/molecules';
-import { useApp } from './context';
+import { RequireChild, RequireSession } from './guards';
 
 const lazyPage = <K extends string>(load: () => Promise<Record<K, React.ComponentType>>, name: K) =>
   lazy(() => load().then((m) => ({ default: m[name] })));
@@ -9,14 +9,11 @@ const lazyPage = <K extends string>(load: () => Promise<Record<K, React.Componen
 const LoginPage = lazyPage(() => import('@/presentation/pages/LoginPage'), 'LoginPage');
 const ChildrenPage = lazyPage(() => import('@/presentation/pages/ChildrenPage'), 'ChildrenPage');
 const ChildFormPage = lazyPage(() => import('@/presentation/pages/ChildFormPage'), 'ChildFormPage');
-
-/** Parents and guests alike need a session; everyone else goes to the login page. */
-function RequireSession() {
-  const { session, sessionReady } = useApp();
-  if (!sessionReady) return <StatePanel kind="loading" />;
-  if (!session) return <Navigate to="/login" replace />;
-  return <Outlet />;
-}
+const HomePage = lazyPage(() => import('@/presentation/pages/HomePage'), 'HomePage');
+const PlayPage = lazyPage(() => import('@/presentation/pages/PlayPage'), 'PlayPage');
+const RacePage = lazy(() => import('@/presentation/pages/RacePage'));
+const StickersPage = lazyPage(() => import('@/presentation/pages/StickersPage'), 'StickersPage');
+const ParentPage = lazy(() => import('@/presentation/pages/ParentPage'));
 
 export function AppRoutes() {
   return (
@@ -27,7 +24,13 @@ export function AppRoutes() {
           <Route path="/children" element={<ChildrenPage />} />
           <Route path="/children/new" element={<ChildFormPage />} />
           <Route path="/children/:childId/edit" element={<ChildFormPage />} />
-          <Route path="/" element={<Navigate to="/children" replace />} />
+          <Route element={<RequireChild />}>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/play/:topic" element={<PlayPage />} />
+            <Route path="/race" element={<RacePage />} />
+            <Route path="/stickers" element={<StickersPage />} />
+            <Route path="/parent" element={<ParentPage />} />
+          </Route>
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

@@ -209,6 +209,7 @@ export const messagesEs: Messages = {
   'error.boundary.title': 'Algo salió mal',
   'error.boundary.body': 'Pip se perdió un poquito. Recargar la página suele arreglarlo.',
   'error.reload': 'Recargar la página',
+  'quiz.saveFailed': 'No pudimos guardar tu progreso. Revisa tu conexión e inténtalo de nuevo.',
   'error.auth.invalid_credentials': 'Ese correo y esa contraseña no coinciden.',
   'error.auth.email_not_confirmed': 'Primero confirma tu correo. Revisa tu bandeja de entrada.',
   'error.auth.email_taken': 'Ya existe una cuenta con este correo. Prueba a iniciar sesión.',
