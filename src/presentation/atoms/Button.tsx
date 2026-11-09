@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import type { ButtonHTMLAttributes } from 'react';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -6,9 +7,12 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 /** Chunky tactile button. Always a real <button>; `type` defaults to "button" so it never submits by accident. */
-export function Button({ variant = 'primary', size, className, type = 'button', ...rest }: ButtonProps) {
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
+  { variant = 'primary', size, className, type = 'button', ...rest },
+  ref,
+) {
   const classes = ['pip-btn', variant === 'alt' && 'pip-btn--alt', size && `pip-btn--${size}`, className]
     .filter(Boolean)
     .join(' ');
-  return <button type={type} className={classes} {...rest} />;
-}
+  return <button ref={ref} type={type} className={classes} {...rest} />;
+});
