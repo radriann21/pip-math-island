@@ -11,6 +11,8 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: false,
+    // Exhaustive property tests in domain/exercises can exceed 5s when files run in parallel.
+    testTimeout: 30_000,
     setupFiles: ['src/test/setup.ts'],
     include: ['src/**/*.test.{ts,tsx}'],
     exclude: ['node_modules', 'dist', 'prototype/**'],
