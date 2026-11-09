@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { InvalidRoundError, scoreRound } from './round';
+import { InvalidRoundError, scoreRound, summarizeAnswers } from './round';
 import type { AnswerDetail, RoundOutcome } from './round';
 
 function outcome(first: number, second: number, missed: number, tierBefore: 0 | 1 | 2 = 1): RoundOutcome {
@@ -86,5 +86,26 @@ describe('scoreRound', () => {
         expect((e as Error).name).toBe('InvalidRoundError');
       }
     });
+  });
+});
+
+describe('summarizeAnswers', () => {
+  const d = (index: number, correct: boolean, tries: 1 | 2): AnswerDetail => ({ index, prompt: `q${index}`, correct, tries });
+
+  it('counts first tries, second tries and misses', () => {
+    expect(summarizeAnswers([d(0, true, 1), d(1, true, 2), d(2, false, 2), d(3, true, 1)])).toEqual({
+      firstTry: 2,
+      secondTry: 1,
+      missed: 1,
+      bestCombo: 1,
+    });
+  });
+  it('finds the longest run of first-try answers in index order', () => {
+    const details = [d(3, true, 1), d(0, true, 1), d(1, true, 1), d(2, false, 2), d(4, true, 1)];
+    // order 0,1,2,3,4 -> run of 2, break, run of 2
+    expect(summarizeAnswers(details).bestCombo).toBe(2);
+  });
+  it('is all zero for no answers', () => {
+    expect(summarizeAnswers([])).toEqual({ firstTry: 0, secondTry: 0, missed: 0, bestCombo: 0 });
   });
 });

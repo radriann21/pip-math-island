@@ -70,3 +70,26 @@ export function scoreRound(o: RoundOutcome): RoundScore {
     perfect: o.firstTry === 10,
   };
 }
+
+/** Counts and the longest first-try run, derived from the answer details (in index order). */
+export function summarizeAnswers(details: readonly AnswerDetail[]): {
+  firstTry: number;
+  secondTry: number;
+  missed: number;
+  bestCombo: number;
+} {
+  const summary = { firstTry: 0, secondTry: 0, missed: 0, bestCombo: 0 };
+  let combo = 0;
+  for (const d of [...details].sort((a, b) => a.index - b.index)) {
+    if (d.correct && d.tries === 1) {
+      summary.firstTry++;
+      combo++;
+      summary.bestCombo = Math.max(summary.bestCombo, combo);
+    } else {
+      combo = 0;
+      if (d.correct) summary.secondTry++;
+      else summary.missed++;
+    }
+  }
+  return summary;
+}
