@@ -205,6 +205,10 @@ export const messagesEs: Messages = {
   'child.deleteYes': 'Sí, borrar',
   'child.deleteNo': 'Conservar',
 
+  // errores
+  'error.boundary.title': 'Algo salió mal',
+  'error.boundary.body': 'Pip se perdió un poquito. Recargar la página suele arreglarlo.',
+  'error.reload': 'Recargar la página',
   // toasts
   'toast.sticker': 'Sticker nuevo: {name}',
 };

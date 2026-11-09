@@ -207,6 +207,10 @@ export const messagesEn = {
   'child.deleteYes': 'Yes, delete',
   'child.deleteNo': 'Keep',
 
+  // errors
+  'error.boundary.title': 'Something went wrong',
+  'error.boundary.body': 'Pip got a little lost. Reloading the page usually fixes it.',
+  'error.reload': 'Reload the page',
   // toasts
   'toast.sticker': 'New sticker: {name}',
 } as const;
