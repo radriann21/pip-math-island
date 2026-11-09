@@ -24,9 +24,9 @@ the Supabase project `educative-project` (migrations via MCP). No other remote d
 - [x] T2 Database: schema, RLS, indexes, RPCs `record_round` / `record_race`, migrations committed, advisors clean, generated types — route: inline (remote MCP)
 - [x] T3a Domain/exercises core: shared types, markup, SVG visuals, option helpers, checkAnswer, generateRound, race question, generators count/add/sub/mul/div + correctness tests — route: delegated writer
 - [x] T3b Domain/exercises rest: generators frac/place/time/money/geo/pattern/word + full-registry property tests — route: delegated writer
-- [ ] T4 Domain/progression: stars, tiers, xp/levels, streak, daily goal, 12 badges, round scoring; unit tests — route: delegated writer
-- [ ] T5 Application: ports, use cases, in-memory fakes, use-case tests — route: delegated writer
-- [ ] T6 Infrastructure: Supabase adapters (auth, children, progress via RPC), local guest adapters, clock, composition root; adapter tests with mocked client — route: delegated writer
+- [x] T4 Domain/progression: stars, tiers, xp/levels, streak, daily goal, 12 badges, round scoring; unit tests — route: delegated writer
+- [x] T5 Application: ports, use cases, in-memory fakes, use-case tests — route: delegated writer
+- [x] T6 Infrastructure: Supabase adapters (auth, children, progress via RPC), local guest adapters, clock, composition root; adapter tests with mocked client — route: delegated writer
 - [ ] T7 Presentation foundation: tokens/base CSS port, i18n (en/es), atoms+molecules (Pip, stars, buttons, keypad, option grid, visuals), RTL tests — route: delegated writer
 - [ ] T8 Presentation pages: Auth, Child picker, Home, Quiz, Result, Race, Stickers, Parent dashboard (math gate), router — route: delegated writer
 - [ ] T9 Integration & verification: typecheck, lint, tests, build, advisors, README, live smoke against Supabase — route: inline
@@ -58,5 +58,13 @@ TDD: enabled (source: session instructions) · runner: `pnpm test` (Vitest) · R
 - T3b spot check by orchestrator: typecheck pass, lint pass, 438/438 tests pass.
 - Decision: T4 (progression) and T5 (application) are given to one writer sequentially (small domain slice, same contract).
 
+- T4+T5 done (commits 0c57999 48fda6d 8d5c538 5b7961c c7a9516 19eac20 f450418 8b4ed17 e27ad2a): progression domain (scoreRound, levels, streak, daily bonus, 12 badges, race tracker), application model/ports/errors, 15 use cases, `projection.ts` (applyRound/applyRace mirror the SQL RPCs, reused by fakes and local adapter), in-memory fakes, `createTestDeps()`. `startRound`/`startRace` are synchronous.
+- Tech debt: vitest `testTimeout` raised to 30000 because the `place` rounding property test is slow (~4s) and flaked under parallel load; optimise later (T9).
+- T4+T5 spot check by orchestrator: typecheck pass, lint pass, 628/628 tests pass.
+
+- T6 done (commits 0aa0cb9 2f3bd17 8e960a4 9cae017 ce3bc57 47ffa06 e5ae430 e59e6c7 + auth/child/progress adapters 10e351a 3c6c8a2 1a8dfe3 c105cb1): env reader, SystemClock (local date), local guest adapters (corruption-safe, 8-child limit, parity-tested against in-memory fake), Supabase auth/child/progress adapters (exact RPC args asserted, error mapping with stable auth codes), composition root `resolveMode/createDeps` (cloud vs guest). RED observations were missing-module failures only.
+- T6 spot check by orchestrator: typecheck pass, lint pass, 747/747 tests pass, build pass.
+- T7 (presentation foundation) is running in an isolated worktree in parallel; T8 starts after merge.
+
 ## Next step
-T4+T5.
+Merge T7, then T8.
