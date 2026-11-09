@@ -22,8 +22,8 @@ the Supabase project `educative-project` (migrations via MCP). No other remote d
 ## Tasks
 - [x] T1 Scaffold: Vite+React+TS strict, Vitest/RTL, ESLint layer rules, folders, scripts, `.env.example`, README skeleton — route: delegated writer
 - [x] T2 Database: schema, RLS, indexes, RPCs `record_round` / `record_race`, migrations committed, advisors clean, generated types — route: inline (remote MCP)
-- [ ] T3a Domain/exercises core: shared types, markup, SVG visuals, option helpers, checkAnswer, generateRound, race question, generators count/add/sub/mul/div + correctness tests — route: delegated writer
-- [ ] T3b Domain/exercises rest: generators frac/place/time/money/geo/pattern/word + full-registry property tests — route: delegated writer
+- [x] T3a Domain/exercises core: shared types, markup, SVG visuals, option helpers, checkAnswer, generateRound, race question, generators count/add/sub/mul/div + correctness tests — route: delegated writer
+- [x] T3b Domain/exercises rest: generators frac/place/time/money/geo/pattern/word + full-registry property tests — route: delegated writer
 - [ ] T4 Domain/progression: stars, tiers, xp/levels, streak, daily goal, 12 badges, round scoring; unit tests — route: delegated writer
 - [ ] T5 Application: ports, use cases, in-memory fakes, use-case tests — route: delegated writer
 - [ ] T6 Infrastructure: Supabase adapters (auth, children, progress via RPC), local guest adapters, clock, composition root; adapter tests with mocked client — route: delegated writer
@@ -51,5 +51,12 @@ TDD: enabled (source: session instructions) · runner: `pnpm test` (Vitest) · R
 - T1 done (commits 1b5f377, f128023, fd94f6a): Vite 8 + React 18.3.1 + TS 6.0.3 (typescript-eslint caps TS <6.1) + Vitest 4 + ESLint 10 layer rules (violations observed failing lint). Local tools: fd/eza/rg/sd/brew missing, `bat` works; this `pnpm` rejects `-s`.
 - T1 spot check by orchestrator: typecheck pass, lint pass, tests 11/11 pass.
 
+- T3a done (commits 9764a16 280fbbd 82ac48f 7cdf2f8 351f357 c81845b): shared types/locale, SVG visuals, options/answer, count/add/sub/mul/div generators with pure builders, registry/round/race. Prototype bugs fixed: gendered "Cuántas/Cuántos", ambiguous "between" options. Stricter `checkAnswer` (rejects "5abc"). Writer reported no observed RED for trivial atGrade/atTier helpers.
+- T3a spot check by orchestrator: typecheck pass, lint pass, 203/203 tests pass.
+
+- T3b done (commits c7a89f9 299c85b d4404e1 2dda5eb 69f148e 088c2e4 69dccf5 bb05fd7 ff248ce): frac/place/time/money/geo/pattern/word, 12 topics registered. Prototype defects fixed: recursive decimal-digit branch, inconsistent decimal compare, ambiguous patterns, silent coin fallback, fraction distractors equal to the answer, rounding option collapse, square offered as rectangle, non-LCD unlike sums. Only observed RED for topic files was the missing-import failure; sweep test proven able to fail by a deliberate break.
+- T3b spot check by orchestrator: typecheck pass, lint pass, 438/438 tests pass.
+- Decision: T4 (progression) and T5 (application) are given to one writer sequentially (small domain slice, same contract).
+
 ## Next step
-T3a.
+T4+T5.
