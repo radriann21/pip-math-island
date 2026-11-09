@@ -25,6 +25,8 @@ interface AppProvidersProps {
   initialSession?: Session | null;
   /** Vite-style env (defaults to `import.meta.env`). */
   env?: Record<string, unknown>;
+  /** Starting mode when `deps` are injected (defaults to guest); otherwise it is resolved from env and storage. */
+  mode?: AppMode;
 }
 
 function defaultStorage(): KeyValueStorage {
@@ -62,7 +64,7 @@ function initialLocale(storage: KeyValueStorage): Locale {
   return language.toLowerCase().startsWith('es') ? 'es' : 'en';
 }
 
-export function AppProviders({ children, deps: injected, storage: injectedStorage, initialSession, env }: AppProvidersProps) {
+export function AppProviders({ children, deps: injected, storage: injectedStorage, initialSession, env, mode: injectedMode }: AppProvidersProps) {
   // Fixed for the life of the app: where we read configuration and persist small preferences.
   const [fixed] = useState(() => {
     const storage = injectedStorage ?? defaultStorage();
@@ -80,7 +82,7 @@ export function AppProviders({ children, deps: injected, storage: injectedStorag
   );
 
   const [mode, setMode] = useState<AppMode>(() =>
-    injected ? 'guest' : resolveMode({ env: env ?? (import.meta.env as Record<string, unknown>), storage }),
+    injected ? (injectedMode ?? 'guest') : resolveMode({ env: env ?? (import.meta.env as Record<string, unknown>), storage }),
   );
   const [deps, setDeps] = useState<Deps>(() => build(mode));
 
