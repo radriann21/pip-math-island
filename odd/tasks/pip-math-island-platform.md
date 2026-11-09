@@ -27,7 +27,7 @@ the Supabase project `educative-project` (migrations via MCP). No other remote d
 - [x] T4 Domain/progression: stars, tiers, xp/levels, streak, daily goal, 12 badges, round scoring; unit tests — route: delegated writer
 - [x] T5 Application: ports, use cases, in-memory fakes, use-case tests — route: delegated writer
 - [x] T6 Infrastructure: Supabase adapters (auth, children, progress via RPC), local guest adapters, clock, composition root; adapter tests with mocked client — route: delegated writer
-- [ ] T7 Presentation foundation: tokens/base CSS port, i18n (en/es), atoms+molecules (Pip, stars, buttons, keypad, option grid, visuals), RTL tests — route: delegated writer
+- [x] T7 Presentation foundation: tokens/base CSS port, i18n (en/es), atoms+molecules (Pip, stars, buttons, keypad, option grid, visuals), RTL tests — route: delegated writer
 - [ ] T8 Presentation pages: Auth, Child picker, Home, Quiz, Result, Race, Stickers, Parent dashboard (math gate), router — route: delegated writer
 - [ ] T9 Integration & verification: typecheck, lint, tests, build, advisors, README, live smoke against Supabase — route: inline
 
@@ -66,5 +66,8 @@ TDD: enabled (source: session instructions) · runner: `pnpm test` (Vitest) · R
 - T6 spot check by orchestrator: typecheck pass, lint pass, 747/747 tests pass, build pass.
 - T7 (presentation foundation) is running in an isolated worktree in parallel; T8 starts after merge.
 
+- T7 done (worktree branch merged; commits eb05ac9 4c85964 0d4a2aa 07f3258 5c889e4 af95a85 7c5200e): tokens/base/visuals CSS, i18n en/es with key-parity test, 10 atoms, 13 molecules, 14 organisms (view-model props, no application imports), domain-markup↔Sprite cross-check test. CSS not yet imported by main.tsx and NOT visually verified in a browser.
+- T7 spot check by orchestrator on merged tree: typecheck pass, lint pass, 935/935 tests pass, build pass.
+
 ## Next step
-Merge T7, then T8.
+T8.
